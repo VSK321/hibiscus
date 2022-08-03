@@ -1,0 +1,62 @@
+{
+  "home": {
+    "type": "view",
+    "hardpath": "C:/Users/CAMPC1/source/repos/Roze/Roze/Views",
+    "softpath": "/",
+    "name": "Home.roze"
+  },
+  "hidden": {
+    "type": "view",
+    "hardpath": "C:/Users/CAMPC1/source/repos/Roze/Roze/Views",
+    "softpath": "/a",
+    "name": "Hidden.roze"
+  },
+  "counter": {
+    "type": "view",
+    "hardpath": "C:/Users/CAMPC1/source/repos/Roze/Roze/Views",
+    "softpath": "/counter",
+    "name": "Counter.roze"
+  },
+  "rozeWS": {
+    "type": "controller",
+    "hardpath": "C:/Users/CAMPC1/source/repos/Roze/Roze/Controllers",
+    "softpath": "/_roze",
+    "name": "rozeWS.py"
+  },
+  "rozeServer": {
+    "type": "public",
+    "hardpath": "C:/Users/CAMPC1/source/repos/Roze/Roze/Shared",
+    "softpath": "/scripts/roze.server.js",
+    "name": "roze.server.js"
+  },
+  "error": {
+    "type": "view",
+    "hardpath": "C:/Users/CAMPC1/source/repos/Roze/Roze/Views",
+    "softpath": "/_error",
+    "name": "_error.roze"
+  },
+  "Calculator": {
+    "type": "view",
+    "hardpath": "C:/Users/CAMPC1/source/repos/Roze/Roze/Views",
+    "softpath": "/calculator",
+    "name": "Calculator.roze"
+  },
+  "Input": {
+    "type": "view",
+    "hardpath": "C:/Users/CAMPC1/source/repos/Roze/Roze/Views",
+    "softpath": "/input",
+    "name": "Input.roze"
+  },
+  "BedLight": {
+    "type": "view",
+    "hardpath": "C:/Users/CAMPC1/source/repos/Roze/Roze/Views",
+    "softpath": "/BedroomLight",
+    "name": "BedroomLight.roze"
+  },
+  "controllerTest": {
+    "type": "controller",
+    "hardpath": "C:/Users/CAMPC1/source/repos/Roze/Roze/Controllers",
+    "softpath": "/r",
+    "name": "TestController.py"
+  }
+}

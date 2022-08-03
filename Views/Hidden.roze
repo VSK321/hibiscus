@@ -1,0 +1,9 @@
+~exe~x = self.RandomValue()
+~if x < 50{~
+<p>x is not greater than 50. x is ~(x)~. x is ~(x)~</p>
+~}
+~else{~
+<p>x is greater than 50. x is ~(x)~</p>
+~}
+~exe~import Home
+<p>~(Home.Page().main())~</p>

@@ -1,0 +1,13 @@
+<div class="page">
+    <div class="sidebar">
+        ~(self.menu.main())~
+    </div>
+
+    <div class="main">
+        <div class="content px-4">
+            <main>
+                ~appView~
+            </main>
+        </div>
+    </div>
+</div>

@@ -21,6 +21,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AppLoc.py" />
     <Compile Include="controller.py">
       <SubType>Code</SubType>
     </Compile>
@@ -40,6 +41,7 @@
     <Compile Include="Shared\App.roze.py" />
     <Compile Include="Shared\MainLayout.roze.py" />
     <Compile Include="Shared\NavMenu.roze.py" />
+    <Compile Include="view.py" />
     <Compile Include="Views\BedroomLight.roze.py">
       <SubType>Code</SubType>
     </Compile>
@@ -56,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="root\" />
     <Folder Include="Shared\" />
     <Folder Include="Views\" />
   </ItemGroup>
@@ -63,7 +66,7 @@
     <Content Include="Shared\App.roze" />
     <Content Include="Shared\MainLayout.roze" />
     <Content Include="Shared\NavMenu.roze" />
-    <Content Include="Shared\roze.server.js" />
+    <Content Include="root\roze.server.js" />
     <Content Include="urls.json" />
     <Content Include="Views\BedroomLight.roze">
       <SubType>Code</SubType>
@@ -80,6 +83,7 @@
     <Content Include="Views\_error.roze">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="web.config" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

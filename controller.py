@@ -1,4 +1,5 @@
 import httpheaders
+import uuid
 
 class Controller:
 
@@ -9,6 +10,7 @@ class Controller:
         self.http_data = http_data
         self.Critical_View = Critical_View
         self.Module_Discovery = Module_Discovery
+        self.path = "/" + str(uuid.uuid4())
 
     def reroute(self, path):
         sentData = "HTTP/1.1 302 Found\r\n"

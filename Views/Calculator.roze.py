@@ -1,5 +1,6 @@
+import view
 
-class Page:
+class Page(view.View):
 
     def __init__(self):
-        pass
+        self.path = "/calculator"

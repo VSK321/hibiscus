@@ -1,9 +1,10 @@
 import random
+import view
 
-class Page:
+class Page(view.View):
 
     def __init__(self):
-        pass
+        self.path = "/a"
     
     def RandomValue(self):
         x = random.randint(0, 100)

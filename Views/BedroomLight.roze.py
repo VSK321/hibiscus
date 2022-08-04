@@ -1,9 +1,10 @@
 import socket
+import view
 
-class Page:
+class Page(view.View):
 
     def __init__(self):
-        pass
+        self.path = "/BedroomLight"
 
     def TurnOn(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)

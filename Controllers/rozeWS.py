@@ -4,8 +4,9 @@ import threading
 from lxml import etree
 from lxml.html import fromstring, tostring
 import difflib
+import controller
 
-class Controller:
+class Controller(controller.Controller):
 
     def __init__(self, conn, addr, http_headers, http_data, Critical_View, Module_Discovery):
         self.conn = conn
@@ -20,6 +21,7 @@ class Controller:
         self.page_view = ""
         self.app_view = ""
         self.original_doc = ""
+        self.path = "/_roze"
 
     def HTML_Manager(self, page_view, app_view):
         paths = {}

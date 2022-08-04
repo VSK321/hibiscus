@@ -56,14 +56,18 @@ def Convert(path, fileName):
         file.close()
     except:
         file = open(fileName+'.py', 'w')
-        microcontrollerData = 'class Page:\n    def __init__(self):\n        pass\n'
+        microcontrollerData = 'import view\nclass Page(view.View):\n    def __init__(self):\n        pass\n'
         file.write(microcontrollerData)
         file.close()
     os.chdir(cwd)
+    if not os.listdir().__contains__("g"):
+        os.mkdir("g")
+    os.chdir(cwd + "/g")
     #print(microcontrollerData)
     file = open((fileName[:-5]+".py"), 'w')
     compiledFile = microcontrollerData + '\n    def main(self):\n        temp = ""' + compiledFile + '\n        return temp'
     file.write((compiledFile))
     file.close()
+    os.chdir(cwd)
     #os.chdir(cwd)
 

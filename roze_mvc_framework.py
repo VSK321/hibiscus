@@ -3,11 +3,8 @@ import roze_compiler
 import importlib
 import httpheaders
 import mimetypes
-from lxml import etree
 import os
-import json
 import glob
-import functools
 from AppLoc import *
 
 class MVC(roze_server_framework.HTTP_Server):
@@ -15,7 +12,6 @@ class MVC(roze_server_framework.HTTP_Server):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.Critical_View = {}
-        self.Module_Discovery = {}
 
     def HTML_Manager(self, page_view, softpath):
         page_model = self.Critical_View['MainLayout'].Page().main()
@@ -25,19 +21,19 @@ class MVC(roze_server_framework.HTTP_Server):
         sentData = ""
         headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': 'text/html', 'connection': 'close'}
         sentData = httpheaders.HTTP_Headers_Constructor(headers)
-        sentData = sentData + self.HTML_Manager(self.Module_Discovery[softpath]['module'].Page().main(), softpath)
+        sentData = sentData + self.HTML_Manager(app.funcs[softpath]['module']().main(), softpath)
         sentData = sentData.encode()
         return sentData
 
     def ControllerHandler(self, conn, addr, http_headers, http_data, softpath):
-        self.Module_Discovery[softpath]['module'].Controller(**{'conn':conn, 'addr':addr, 'http_headers':http_headers, 'http_data':http_data, 'Critical_View':self.Critical_View, 'Module_Discovery':self.Module_Discovery}).main()
+        app.funcs[softpath]['module'](**{'conn':conn, 'addr':addr, 'http_headers':http_headers, 'http_data':http_data, 'Critical_View':self.Critical_View}).main()
 
     def PublicHandler(self, softpath):
         headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': mimetypes.guess_type(softpath)[0], 'connection': 'close'}
         cwd = os.getcwd()
         sentData = httpheaders.HTTP_Headers_Constructor(headers)
-        os.chdir(self.Module_Discovery[softpath]['hardpath'])
-        file = open(self.Module_Discovery[softpath]['file'], 'rb')
+        os.chdir(app.funcs[softpath]['hardpath'])
+        file = open(app.funcs[softpath]['file'], 'rb')
         sentData = sentData.encode() + file.read()
         file.close()
         os.chdir(cwd)
@@ -46,7 +42,7 @@ class MVC(roze_server_framework.HTTP_Server):
     def HTTP_Request_Manager(self, conn, addr, http_headers, http_data):
         softpath = http_headers.Url###Check if softpath exists
         try:
-            softpath_Type = self.Module_Discovery[softpath]['type']
+            softpath_Type = app.funcs[softpath]['type']
             if softpath_Type == 'view':
                 sentData = "HTTP/1.1 200 OK\r\n"
                 sentData = sentData.encode() + self.ViewHandler(softpath)
@@ -103,7 +99,7 @@ class MVC(roze_server_framework.HTTP_Server):
                 path = path[0].split("/")
                 divider = "/"
             name = path[-1]
-            self.Module_Discovery["/" + "/".join(path[1:])] = {'type': 'public', 'file': (name), 'hardpath': (cwd + "/root" + "/".join(path[1:-1]))}
+            app.funcs["/" + "/".join(path[1:])] = {'type': 'public', 'file': (name), 'hardpath': (cwd + "/root" + "/".join(path[1:-1]))}
 
         #Import and check for implementations of View or Controller
         for view in views:
@@ -126,14 +122,8 @@ class MVC(roze_server_framework.HTTP_Server):
                 divider = "/"
             name = path[-1][0:-5]
             #os.chdir(cwd + "/g")
-            module = importlib.import_module(name)
+            importlib.import_module(name)
             os.remove(name + ".py")
-            #os.chdir(cwd)
-            try:
-                softPath = module.Page().path;
-            except:
-                softPath = "/" + name
-            self.Module_Discovery[softPath] = {'type': 'view', 'module': module}
 
         for controller in controllers:
             path = controller.split("\\")
@@ -150,40 +140,9 @@ class MVC(roze_server_framework.HTTP_Server):
             currControllerCode = open(path[-1], 'w')
             currControllerCode.write(data)
             currControllerCode.close()
-            module = importlib.import_module(name)
+            importlib.import_module(name)
             os.remove(path[-1])
-            softPath = module.Controller(None, None, httpheaders.HTTP_Headers("GET / HTTP/1.1\r\n"), None, None, None).path;
-            self.Module_Discovery[softPath] = {'type': 'controller', 'module': module}
 
-        #file = open('urls.json', 'r')
-        #data = file.read()
-        #file.close()
-        #urls = json.loads(data)
-        #for url in urls:
-        #    if urls[url]['type'] == 'view':
-        #        roze_compiler.Convert(urls[url]['hardpath'], urls[url]['name'])
-        #        #os.chdir(urls[url]['hardpath'])
-        #        #os.remove(os.getcwd() + '/' + urls[url]['name'][0:-5] + '.py')
-        #    elif urls[url]['type'] == 'controller':
-        #        os.chdir(urls[url]['hardpath'])
-        #        file = open(urls[url]['name'], 'r')
-        #        data = file.read()
-        #        file.close()
-        #        os.chdir(cwd)
-        #        file = open(urls[url]['name'], 'w')
-        #        file.write(data)
-        #        file.close()
-        #        #os.remove(os.getcwd() + '/' + urls[url]['name'])
-        #    elif urls[url]['type'] == 'public':
-        #        self.Module_Discovery[urls[url]['softpath']] = {'type': 'public', 'file': (urls[url]['name']), 'hardpath': (urls[url]['hardpath'])}
-
-        #for url in urls:
-        #    if urls[url]['type'] == 'view':
-        #        temp = urls[url]['name'][0:-5]
-        #        self.Module_Discovery[urls[url]['softpath']] = {'type': 'view', 'module': importlib.import_module(temp)}
-        #    elif urls[url]['type'] == 'controller':
-        #        self.Module_Discovery[urls[url]['softpath']] = {'type': 'controller', 'module': importlib.import_module(urls[url]['name'][0:-3])}
-        print(app.funcs)
         os.chdir(cwd)
         print('Build successful.')
 

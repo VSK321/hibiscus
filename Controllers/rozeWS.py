@@ -5,23 +5,23 @@ from lxml import etree
 from lxml.html import fromstring, tostring
 import difflib
 import controller
+from AppLoc import *
 
+@app.set_route("/_roze", True)
 class Controller(controller.Controller):
 
-    def __init__(self, conn, addr, http_headers, http_data, Critical_View, Module_Discovery):
+    def __init__(self, conn, addr, http_headers, http_data, Critical_View):
         self.conn = conn
         self.addr = addr
         self.http_headers = http_headers
         self.http_data = http_data
         self.Critical_View = Critical_View
-        self.Module_Discovery = Module_Discovery
         self.Lock = threading.Lock()
         self.SoftPath = http_headers.Url
         self.paths = {}
         self.page_view = ""
         self.app_view = ""
         self.original_doc = ""
-        self.path = "/_roze"
 
     def HTML_Manager(self, page_view, app_view):
         paths = {}
@@ -55,9 +55,9 @@ class Controller(controller.Controller):
 
     def InfoWebSocket(self, data):
         try:
-            self.page_view = self.Module_Discovery[data['softpath']]['module'].Page()
+            self.page_view = app.funcs[data['softpath']]['module']()
         except:
-            self.page_view = self.Module_Discovery['/_error']['module'].Page()
+            self.page_view = app.funcs['/_error']['module']()
         temp, data['paths'] = self.HTML_Manager(self.page_view.main(), self.app_view.main())
         self.original_doc = temp
         data['insert'] = {"/HTML/BODY/APP": temp}

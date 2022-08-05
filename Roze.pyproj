@@ -54,6 +54,7 @@
     <Compile Include="Views\Input.roze.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Views\_error.roze.py" />
     <Compile Include="websocket.py" />
   </ItemGroup>
   <ItemGroup>

@@ -82,14 +82,16 @@ class MVC(roze_server_framework.HTTP_Server):
         for f in os.listdir(os.getcwd()+'/Shared'):
             if f.endswith('.roze'):
                 roze_compiler.Convert(os.getcwd()+'/Shared', f)
-                os.chdir(cwd + "/g")
-                importlib.__path__.append(cwd + "/g")
+        for f in os.listdir(os.getcwd()+'/Shared'):
+            if f.endswith('.roze'):
+                #os.chdir(cwd + "/g")
                 self.Critical_View[f[0:-5]] = importlib.import_module(f[0:-5])
-                os.chdir(cwd)
+                os.remove(f[0:-5] + ".py")
+               # os.chdir(cwd)
         #Discover all files within cwd and check for .roze and .py
         views = glob.glob('./**/*.roze', recursive=True)
-        controllers = glob.glob('./**/*.py', recursive=True)
-        controllers = [controller for controller in controllers if not controller.endswith("_g.py") and not controller.endswith(".roze.py")]
+        controllers = glob.glob('./*/**/*.py', recursive=True)
+        controllers = [controller for controller in controllers if not controller.endswith(".roze.py")]
         os.chdir(cwd + "/root")
         public = glob.glob("./**/*.*", recursive=True)
         os.chdir(cwd)
@@ -104,7 +106,6 @@ class MVC(roze_server_framework.HTTP_Server):
             self.Module_Discovery["/" + "/".join(path[1:])] = {'type': 'public', 'file': (name), 'hardpath': (cwd + "/root" + "/".join(path[1:-1]))}
 
         #Import and check for implementations of View or Controller
-
         for view in views:
             if view.startswith(".\\Shared") or view.startswith("./Shared"):
                 continue
@@ -114,10 +115,20 @@ class MVC(roze_server_framework.HTTP_Server):
                 path = path[0].split("/")
                 divider = "/"
             roze_compiler.Convert(divider.join(path[0:-1]), path[-1]);
+
+        for view in views:
+            if view.startswith(".\\Shared") or view.startswith("./Shared"):
+                continue
+            path = view.split("\\")
+            divider = "\\"
+            if len(path) == 1:
+                path = path[0].split("/")
+                divider = "/"
             name = path[-1][0:-5]
-            os.chdir(cwd + "/g")
+            #os.chdir(cwd + "/g")
             module = importlib.import_module(name)
-            os.chdir(cwd)
+            os.remove(name + ".py")
+            #os.chdir(cwd)
             try:
                 softPath = module.Page().path;
             except:
@@ -130,12 +141,19 @@ class MVC(roze_server_framework.HTTP_Server):
             if len(path) == 1:
                 path = path[0].split("/")
                 divider = "/"
-            name = path[-1][0:-5]
-            os.chdir(cwd + divider.join(path[0:-1]))
-            module = importlib.import_module(name)
+            name = path[-1][0:-3]
+            os.chdir(cwd + "/" + divider.join(path[1:-1]))
+            controllerCode = open(path[-1], 'r')
+            data = controllerCode.read()
+            controllerCode.close()
             os.chdir(cwd)
-            softPath = module.Controller().path;
-            self.Module_Discovery["/" + "/".join(path[1:])] = {'type': 'controller', 'module': module}
+            currControllerCode = open(path[-1], 'w')
+            currControllerCode.write(data)
+            currControllerCode.close()
+            module = importlib.import_module(name)
+            os.remove(path[-1])
+            softPath = module.Controller(None, None, httpheaders.HTTP_Headers("GET / HTTP/1.1\r\n"), None, None, None).path;
+            self.Module_Discovery[softPath] = {'type': 'controller', 'module': module}
 
         #file = open('urls.json', 'r')
         #data = file.read()

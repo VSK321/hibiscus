@@ -87,6 +87,7 @@ class Controller(controller.Controller):
                 #    print(u'Delete "{}" from position {}'.format(s[-1], i))
                 #elif s[0] == "+":
                 #    print(u'Add "{}" from position {}'.format(s[-1], i))
+            self.original_doc = temp
             data['insert'] = {"/HTML/BODY/APP": temp}
         data['vars'] = {}
         return data

@@ -61,17 +61,6 @@ class MVC(roze_server_framework.HTTP_Server):
             conn.send(sentData)
             conn.close()
 
-    def inheritors(klass):
-        subclasses = set()
-        work = [klass]
-        while work:
-            parent = work.pop()
-            for child in parent.__subclasses__():
-                if child not in subclasses:
-                    subclasses.add(child)
-                    work.append(child)
-        return subclasses
-
     def Build(self):
         print('Building...')
         cwd = os.getcwd()

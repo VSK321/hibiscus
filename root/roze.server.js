@@ -68,11 +68,8 @@ socket.onmessage = function (event) {
 };
 window.addEventListener('load', Init);
 
-// identify an element to observe
-const elementToObserve = document.querySelector("app");
+const app = document.querySelector("app");
 
-// create a new instance of `MutationObserver` named `observer`,
-// passing it a callback function
 const observer = new MutationObserver(function () {
     var elems = document.querySelectorAll("[href]");
     for (var i = 0; i < elems.length; i++) {
@@ -83,7 +80,7 @@ const observer = new MutationObserver(function () {
             e = e || window.event;
             var element = e.target || e.srcElement;
             //document.location.pathname = element.pathname;
-            window.history.pushState('test', 'Title', element.pathname);
+            window.history.pushState('', '', element.pathname);
             message['softpath'] = element.pathname;
             message["path"] = "";
             message["event"] = "";
@@ -95,6 +92,4 @@ const observer = new MutationObserver(function () {
     }
 });
 
-// call `observe()` on that MutationObserver instance,
-// passing it the element to observe, and the options object
-observer.observe(elementToObserve, { subtree: true, childList: true });
+observer.observe(app, { subtree: true, childList: true });

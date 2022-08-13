@@ -1,6 +1,6 @@
 import os #Convert("C:\\Users\\shrik.HOME-PC02\\OneDrive\\Documents\\PythonTests\\Roze", "Test.roze")
 
-def ConvertSingleLine(line):
+def ConvertSingleLine(line: str) -> str:
     if line.replace('\t', '').replace(' ', '').startswith("~exe~") == True:
         line = line[(line.find("~exe~")+5):len(line)]        
     else:
@@ -15,7 +15,7 @@ def ConvertSingleLine(line):
         line = "temp = temp + '" + line + "\\n' "
     return line
 
-def ConvertFile(temp):
+def ConvertFile(temp: str) -> str:
     splitTemp = temp.splitlines()
     num = 2
     for lineNum in range(len(splitTemp)):
@@ -42,7 +42,7 @@ def ConvertFile(temp):
         temp = temp + '\n' + x
     return temp
 
-def Convert(path, fileName):
+def Convert(path: str, fileName: str) -> None:
     microcontrollerData = ""
     cwd = os.getcwd()
     os.chdir(path)
@@ -56,14 +56,18 @@ def Convert(path, fileName):
         file.close()
     except:
         file = open(fileName+'.py', 'w')
-        microcontrollerData = 'class Page:\n    def __init__(self):\n        pass\n'
+        microcontrollerData = 'import view\nclass Page(view.View):\n    def __init__(self):\n        pass\n'
         file.write(microcontrollerData)
         file.close()
     os.chdir(cwd)
+    #if not os.listdir().__contains__("g"):
+    #    os.mkdir("g")
+    #os.chdir(cwd + "/g")
     #print(microcontrollerData)
     file = open((fileName[:-5]+".py"), 'w')
     compiledFile = microcontrollerData + '\n    def main(self):\n        temp = ""' + compiledFile + '\n        return temp'
     file.write((compiledFile))
     file.close()
+    #os.chdir(cwd)
     #os.chdir(cwd)
 

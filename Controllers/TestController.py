@@ -1,5 +1,7 @@
 import controller
+from AppLoc import *
 
+@app.set_route("/r", True)
 class Controller(controller.Controller):
 
     def __init__(self, *args, **kwargs):

@@ -67,3 +67,29 @@ socket.onmessage = function (event) {
     message['paths'] = {};
 };
 window.addEventListener('load', Init);
+
+const app = document.querySelector("app");
+
+const observer = new MutationObserver(function () {
+    var elems = document.querySelectorAll("[href]");
+    for (var i = 0; i < elems.length; i++) {
+        var currElem = elems[i];
+        if (currElem.hostname != document.location.hostname)
+            continue;
+        currElem.onclick = function (e) {
+            e = e || window.event;
+            var element = e.target || e.srcElement;
+            //document.location.pathname = element.pathname;
+            window.history.pushState('', '', element.pathname);
+            message['softpath'] = element.pathname;
+            message["path"] = "";
+            message["event"] = "";
+            message["type"] = 'info';
+            console.log(message);
+            socket.send(JSON.stringify(message));
+            return false;
+        }
+    }
+});
+
+observer.observe(app, { subtree: true, childList: true });

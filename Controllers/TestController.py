@@ -8,4 +8,4 @@ class Controller(controller.Controller):
         super().__init__(*args, **kwargs)
 
     def main(self):
-        self.reroute("/")
+        self.reroute("/bedroomlight")

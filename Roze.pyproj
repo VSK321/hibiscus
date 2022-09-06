@@ -25,6 +25,7 @@
     <Compile Include="controller.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Controllers\LightSwitchAPI.py" />
     <Compile Include="Controllers\rozeWS.py" />
     <Compile Include="Controllers\TestController.py">
       <SubType>Code</SubType>

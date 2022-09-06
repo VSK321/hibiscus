@@ -1,2 +1,4 @@
 <button class="btn btn-primary" rozeclick="TurnOn">Turn On</button>
-<button class="btn btn-primary" rozeclick="TurnOff">Turn Off</button>
+<div>
+  <button class="btn btn-primary" rozeclick="TurnOff">Turn Off</button>
+</div>

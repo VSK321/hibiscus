@@ -55,7 +55,7 @@ class Controller(controller.Controller):
 
     def InfoWebSocket(self, data):
         try:
-            self.page_view = app.funcs[data['softpath']]['module']()
+            self.page_view = app.funcs[data['softpath'].lower()]['module']()
         except:
             self.page_view = app.funcs['/_error']['module']()
         temp, data['paths'] = self.HTML_Manager(self.page_view.main(), self.app_view.main())

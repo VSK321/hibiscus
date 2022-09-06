@@ -21,9 +21,9 @@ class App:
     def set_route(self, path, iscontroller = False):
         def wrapper(func):
             if iscontroller:
-                self.funcs[path] = {'type': 'controller', 'module' : func}
+                self.funcs[path.lower()] = {'type': 'controller', 'module' : func}
             else:
-                self.funcs[path] = {'type': 'view', 'module' : func}
+                self.funcs[path.lower()] = {'type': 'view', 'module' : func}
             
             @functools.wraps(func)
             def inner_wrapper(*args, **kwargs):

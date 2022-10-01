@@ -28,7 +28,6 @@ function OnEvent(event) {
     if (event.type == "input") {
         message['vars'][message['path']] = this.value;
     }
-    console.log(message);
     socket.send(JSON.stringify(message));
 }
 
@@ -43,7 +42,6 @@ function Init() {
             "paths": {},
             "insert": {},
         };
-        console.log(message);
         socket.send(JSON.stringify(message));
     };
 }
@@ -52,7 +50,6 @@ var message; var elements; var socket;
 socket = new WebSocket(("ws://" + window.location.hostname + "/_roze"));
 socket.onmessage = function (event) {
     message = JSON.parse(event.data);
-    console.log(event.data);
     const keys = Object.keys(message['insert']);
     for (x = 0; x < keys.length; x++) {
         document.evaluate(keys[x], document).iterateNext().innerHTML = message['insert'][keys[x]];

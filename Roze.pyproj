@@ -65,11 +65,11 @@
     <Folder Include="Views\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="appsettings.json" />
     <Content Include="Shared\App.roze" />
     <Content Include="Shared\MainLayout.roze" />
     <Content Include="Shared\NavMenu.roze" />
     <Content Include="root\roze.server.js" />
-    <Content Include="urls.json" />
     <Content Include="Views\BedroomLight.roze">
       <SubType>Code</SubType>
     </Content>

@@ -6,6 +6,7 @@ import mimetypes
 import os
 import glob
 from AppLoc import *
+import socket
 
 class MVC(roze_server_framework.HTTP_Server):
 
@@ -135,6 +136,6 @@ class MVC(roze_server_framework.HTTP_Server):
         os.chdir(cwd)
         print('Build successful.')
 
-instance = MVC('192.168.0.135', 80, 50, 50)
+instance = MVC(socket.gethostbyname(socket.gethostname()), 80, 50, 50)
 instance.Build()
 instance.Start_Server()

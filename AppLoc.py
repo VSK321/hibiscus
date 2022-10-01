@@ -16,6 +16,20 @@ class Logger:
         return wrapper
 
 
+class BackgroundTasks:
+    def __init__(self):
+        self.funcs: dict[str] = {}
+
+    def register_task(self, name: str):
+        def wrapper(func):
+            self.funcs[name.lower()] = func
+            
+            @functools.wraps(func)
+            def inner_wrapper(*args, **kwargs):
+                return func(*args, **kwargs)
+            return inner_wrapper
+        return wrapper
+
 class App:
     def __init__(self):
         self.funcs: dict[str, dict[str]] = {}
@@ -34,3 +48,4 @@ class App:
         return wrapper
 
 app = App()
+backgroundtasks = BackgroundTasks()

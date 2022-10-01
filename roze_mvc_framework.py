@@ -6,7 +6,7 @@ import mimetypes
 import os
 import glob
 from AppLoc import *
-import socket
+import asyncio
 
 class MVC(roze_server_framework.HTTP_Server):
 
@@ -14,20 +14,20 @@ class MVC(roze_server_framework.HTTP_Server):
         super().__init__(*args, **kwargs)
         self.Critical_View = {}
 
-    def HTML_Manager(self, page_view, softpath):
-        page_model = self.Critical_View['MainLayout'].Page().main()
+    async def HTML_Manager(self, page_view, softpath):
+        page_model = await self.Critical_View['MainLayout'].Page().main()
         return page_model
 
-    def ViewHandler(self, softpath):
+    async def ViewHandlerAsync(self, softpath):
         sentData = ""
         headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': 'text/html', 'connection': 'close'}
         sentData = httpheaders.HTTP_Headers_Constructor(headers)
-        sentData = sentData + self.HTML_Manager(app.funcs[softpath]['module']().main(), softpath)
+        sentData = sentData + await self.HTML_Manager(await app.funcs[softpath]['module']().main(), softpath)
         sentData = sentData.encode()
         return sentData
 
-    def ControllerHandler(self, conn, addr, http_headers, http_data, softpath):
-        app.funcs[softpath]['module'](**{'conn':conn, 'addr':addr, 'http_headers':http_headers, 'http_data':http_data, 'Critical_View':self.Critical_View}).main()
+    async def ControllerHandlerAsync(self, conn, addr, http_headers, http_data, softpath):
+        await app.funcs[softpath]['module'](**{'conn':conn, 'addr':addr, 'http_headers':http_headers, 'http_data':http_data, 'Critical_View':self.Critical_View}).main()
 
     def PublicHandler(self, softpath):
         headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': mimetypes.guess_type(softpath)[0], 'connection': 'close'}
@@ -40,26 +40,27 @@ class MVC(roze_server_framework.HTTP_Server):
         os.chdir(cwd)
         return sentData
 
-    def HTTP_Request_Manager(self, conn, addr, http_headers, http_data):
+    async def HTTPRequestManagerAsync(self, conn, addr, http_headers, http_data):
+        loop = asyncio.get_event_loop()
         softpath = http_headers.Url###Check if softpath exists
         try:
             softpath_Type = app.funcs[softpath]['type']
             if softpath_Type == 'view':
                 sentData = "HTTP/1.1 200 OK\r\n"
-                sentData = sentData.encode() + self.ViewHandler(softpath)
-                conn.send(sentData)
+                sentData = sentData.encode() + await self.ViewHandlerAsync(softpath)
+                await loop.sock_sendall(conn, sentData)
                 conn.close()
             elif softpath_Type == 'controller':
-                self.ControllerHandler(conn, addr, http_headers, http_data, softpath)
+                await self.ControllerHandlerAsync(conn, addr, http_headers, http_data, softpath)
             elif softpath_Type == 'public':
                 sentData = "HTTP/1.1 200 OK\r\n"
                 sentData = sentData.encode() + self.PublicHandler(softpath)
-                conn.send(sentData)
+                await loop.sock_sendall(conn, sentData)
                 conn.close()
         except KeyError:
             sentData = "HTTP/1.1 404 Not Found\r\n"
-            sentData = sentData.encode() + self.ViewHandler('/_error')
-            conn.send(sentData)
+            sentData = sentData.encode() + await self.ViewHandlerAsync('/_error')
+            await loop.sock_sendall(conn, sentData)
             conn.close()
 
     def Build(self):
@@ -136,6 +137,12 @@ class MVC(roze_server_framework.HTTP_Server):
         os.chdir(cwd)
         print('Build successful.')
 
-instance = MVC(socket.gethostbyname(socket.gethostname()), 80, 50, 50)
+#socket.gethostbyname(socket.gethostname())
+instance = MVC("127.0.0.1", 80, 50)
 instance.Build()
-instance.Start_Server()
+#instance.Start_Server()
+try:
+    asyncio.run(instance.run_server())
+except:
+    pass
+

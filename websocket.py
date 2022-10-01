@@ -3,7 +3,6 @@ import hashlib
 
 def WebSocketDataEncoder(data, fin, opcode):
     payloadLength = len(data)
-    #data = data.encode()
     sentData = (((2**7)*fin) + opcode).to_bytes(1, byteorder="big")
     if payloadLength <= 125:
         sentData = sentData + chr(payloadLength).encode()
@@ -14,12 +13,10 @@ def WebSocketDataEncoder(data, fin, opcode):
         #fill 64 bits
         sentData = sentData + chr(127).encode() + (payloadLength).to_bytes(16, byteorder="big")
     sentData = sentData + data
-    #print(sentData)
     return sentData
 
 def WebSocketPayloadMask(data, pointer):
     mask = data[pointer: pointer+4]
-    #print(mask)
     pointer = pointer + 4
     return mask, pointer
 
@@ -50,12 +47,10 @@ def XORCipher(data, pointer, mask, payload_Length):
     decoded = ""
     data = data[pointer:(pointer+payload_Length)]
     for currentByte in range(len(data)):
-        #print(currentByte)
         decoded = decoded + chr(data[currentByte] ^ mask[currentByte%4])
     return decoded
 
 def WebSocketDataDecoder(data):
-    #data = data.encode()
     temp = str(bin(data[0]))[2:]
     opcode = temp[4:]
     fin = temp[0]
@@ -65,7 +60,6 @@ def WebSocketDataDecoder(data):
     return decoded, fin, opcode
 
 def VerifyWebSocketRequest(http_headers):
-    #print(http_headers.Headers)
     try:
         sec_WebSocket_Key = http_headers.Headers['Sec-WebSocket-Key']
     except:
@@ -83,14 +77,9 @@ def VerifyWebSocketRequest(http_headers):
     else:
         webSocketRequest = False
 
-    #print(sec_WebSocket_Key, upgrade, connection)
-
     return webSocketRequest, sec_WebSocket_Key
 
-def AcceptWebSocketRequest(conn, sec_WebSocket_Key, http_headers):
-    softpath = http_headers.Url
-    #keys = self.Module_Discovery.keys()
-    #Check if softpath is "/" or in keys for controllers
+def AcceptWebSocketRequest(conn, sec_WebSocket_Key):
     return_Key = base64.b64encode((hashlib.sha1((sec_WebSocket_Key[0] + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").encode()).digest())).decode()
     sentData = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: "+return_Key+"\r\n\r\n"
     conn.send(sentData.encode())

@@ -1,6 +1,6 @@
 <div class="page">
     <div class="sidebar">
-        ~(self.menu.main())~
+        ~(await self.menu.main())~
     </div>
 
     <div class="main">

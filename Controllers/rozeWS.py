@@ -6,6 +6,7 @@ from lxml.html import fromstring, tostring
 import difflib
 import controller
 from AppLoc import *
+import asyncio
 
 @app.set_route("/_roze", True)
 class Controller(controller.Controller):
@@ -34,36 +35,37 @@ class Controller(controller.Controller):
             for attr in el.attrib:
                 if attr.startswith("roze"):
                     #print(attr)
-                    self.paths['/HTML/BODY/APP' + tree.getpath(el).upper() + '/' + attr[4:]] = el.get(attr)
+                    
+                    self.paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "") + '/' + attr[4:]] = el.get(attr)
                     el.attrib.pop(attr)
                     try:
-                        paths['/HTML/BODY/APP' + tree.getpath(el).upper()]
-                        paths['/HTML/BODY/APP' + tree.getpath(el).upper()].append(attr[4:])
+                        paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "")]
+                        paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "")].append(attr[4:])
                     except:
-                        paths['/HTML/BODY/APP' + tree.getpath(el).upper()] = [attr[4:]]
+                        paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "")] = [attr[4:]]
                     #paths['/HTML/BODY/APP' + tree.getpath(el).upper()] = attr[4:]
         page_view = (tostring(page_view)).decode()
         #print(self.paths)
         return page_view, paths
 
-    def WebSocketRequestHandler(self, data):
+    async def WebSocketRequestHandlerAsync(self, data):
         if data['type'] == 'info':
-            sentData = self.InfoWebSocket(data)
+            sentData = await self.InfoWebSocketAsync(data)
         elif data['type'] == 'update':
-            sentData = self.UpdateWebSocket(data)
+            sentData = await self.UpdateWebSocketAsync(data)
         return sentData
 
-    def InfoWebSocket(self, data):
+    async def InfoWebSocketAsync(self, data):
         try:
             self.page_view = app.funcs[data['softpath'].lower()]['module']()
         except:
             self.page_view = app.funcs['/_error']['module']()
-        temp, data['paths'] = self.HTML_Manager(self.page_view.main(), self.app_view.main())
+        temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
         self.original_doc = temp
         data['insert'] = {"/HTML/BODY/APP": temp}
         return data
 
-    def UpdateWebSocket(self, data):
+    async def UpdateWebSocketAsync(self, data):
         method = self.paths[data['path'] + '/' + data['event']]
         if data['path'].find('/MAIN') != -1:
             if data['event'] == "input":
@@ -77,66 +79,67 @@ class Controller(controller.Controller):
             else:
                 update = getattr(self.app_view, method)()
         if update == True:
-            temp, data['paths'] = self.HTML_Manager(self.page_view.main(), self.app_view.main())
+            temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
             page_view = fromstring(temp)
             tree = etree.ElementTree(page_view)
             for i,s in enumerate(difflib.ndiff(self.original_doc, temp)):
-                pass
-                #if s[0] == " ": continue
-                #elif s[0] == "-":
-                #    print(u'Delete "{}" from position {}'.format(s[-1], i))
-                #elif s[0] == "+":
-                #    print(u'Add "{}" from position {}'.format(s[-1], i))
+                if s[0] == " ": continue
+                elif s[0] == "-":
+                    print(u'Delete "{}" from position {}'.format(s[-1], i))
+                elif s[0] == "+":
+                    print(u'Add "{}" from position {}'.format(s[-1], i))
             self.original_doc = temp
             data['insert'] = {"/HTML/BODY/APP": temp}
         data['vars'] = {}
         return data
 
-    def WebSocketPing(self):
+    async def WebSocketPing(self):
+        loop = asyncio.get_event_loop()
         data = "Current"
         data = websocket.WebSocketDataEncoder(data, 1, 9)
-        self.conn.send(data)
+        await loop.sock_sendall(self.conn, data.encode('utf8'))
 
-    def WebSocketHandler(self):
+    async def WebSocketHandlerAsync(self):
+        loop = asyncio.get_event_loop()
         try:
-            data = self.conn.recv(4096)
+            data = (await loop.sock_recv(self.conn, 4096))
             data, fin, opcode = websocket.WebSocketDataDecoder(data)
             while opcode != "1000":
                 temp = data
                 while fin != "1":
-                    data = self.conn.recv(4096)
+                    data = (await loop.sock_recv(self.conn, 4096))
                     data, fin, opcode = websocket.WebSocketDataDecoder(data)
                     temp = temp + data
                 data = temp
                 if opcode == "1001":
                     data = websocket.WebSocketDataEncoder(data, 1, 10)
-                    self.conn.send(data)
+                    await loop.sock_sendall(self.conn, data)
                 else:
                     data = json.loads(data)
                     #print(data)
-                    sendData = self.WebSocketRequestHandler(data)
+                    sendData = await self.WebSocketRequestHandlerAsync(data)
                     #print(sendData)
                     if sendData['insert'] == {}:
                         pass
                     else:
                         sendData = json.dumps(sendData).encode()
                         sendData = websocket.WebSocketDataEncoder(sendData, 1, 1)
-                        self.conn.send(sendData)
-                data = self.conn.recv(4096)
+                        await loop.sock_sendall(self.conn, sendData)
+                data = (await loop.sock_recv(self.conn, 4096))
                 data, fin, opcode = websocket.WebSocketDataDecoder(data)
             self.conn.close()
         except Exception as e:
             print(e)
 
 
-    def main(self):
+    async def main(self):
         connectiontype, seckey = websocket.VerifyWebSocketRequest(self.http_headers)
         if connectiontype:
             self.app_view = self.Critical_View['App'].Page()
-            websocket.AcceptWebSocketRequest(self.conn, seckey, self.http_headers)
+            websocket.AcceptWebSocketRequest(self.conn, seckey)
             #self.t = threading.Thread(target = self.WebSocketHandler, daemon = True)
             #self.t.start()
             #self.t.join()
-            self.WebSocketHandler()
+            await self.WebSocketHandlerAsync()
         else:
             self.conn.close()

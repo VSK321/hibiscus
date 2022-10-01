@@ -9,7 +9,7 @@ class Controller(controller.Controller):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def main(self):
+    async def main(self):
         request = json.loads(self.http_data)
         if (request["request"]):
             #print("success: open")

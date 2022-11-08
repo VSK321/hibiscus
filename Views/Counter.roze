@@ -1,5 +1,2 @@
-<p>Counter is at ~(self.x)~</p>
-
-<div>
-    <button class="btn btn-primary" rozeclick="AddOne">Add</button>
-</div>
+<p>Counter is at ~(self.x)~ </p>
+<button class="btn btn-primary" rozeclick="AddOne">Add</button>

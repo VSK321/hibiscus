@@ -7,6 +7,7 @@ import os
 import glob
 from AppLoc import *
 import asyncio
+import socket
 
 class MVC(roze_server_framework.HTTP_Server):
 
@@ -138,7 +139,7 @@ class MVC(roze_server_framework.HTTP_Server):
         print('Build successful.')
 
 #socket.gethostbyname(socket.gethostname())
-instance = MVC("127.0.0.1", 80, 50)
+instance = MVC(socket.gethostbyname(socket.gethostname()), 80, 50)
 instance.Build()
 #instance.Start_Server()
 try:

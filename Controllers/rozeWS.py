@@ -3,6 +3,7 @@ import json
 import threading
 from lxml import etree
 from lxml.html import fromstring, tostring
+from lxml.html.diff import htmldiff, html_annotate
 import difflib
 import controller
 from AppLoc import *
@@ -33,7 +34,7 @@ class Controller(controller.Controller):
         tree = etree.ElementTree(page_view)
         for el in page_view.xpath("//*"):
             for attr in el.attrib:
-                if attr.startswith("roze"):
+                if attr.startswith("roze"):# and not attr.startswith("rozeid"):
                     #print(attr)
                     
                     self.paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "") + '/' + attr[4:]] = el.get(attr)
@@ -44,6 +45,8 @@ class Controller(controller.Controller):
                     except:
                         paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "")] = [attr[4:]]
                     #paths['/HTML/BODY/APP' + tree.getpath(el).upper()] = attr[4:]
+                #elif attr.startswith("rozeid"):
+                #    pass
         page_view = (tostring(page_view)).decode()
         #print(self.paths)
         return page_view, paths
@@ -82,12 +85,15 @@ class Controller(controller.Controller):
             temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
             page_view = fromstring(temp)
             tree = etree.ElementTree(page_view)
-            for i,s in enumerate(difflib.ndiff(self.original_doc, temp)):
-                if s[0] == " ": continue
-                elif s[0] == "-":
-                    print(u'Delete "{}" from position {}'.format(s[-1], i))
-                elif s[0] == "+":
-                    print(u'Add "{}" from position {}'.format(s[-1], i))
+            #for i,s in enumerate(difflib.ndiff(self.original_doc, temp)):
+            #    if s[0] == " ": continue
+            #    elif s[0] == "-":
+            #        print(u'Delete "{}" from position {}'.format(s[-1], i))
+            #    elif s[0] == "+":
+            #        print(u'Add "{}" from position {}'.format(s[-1], i))
+            diff = htmldiff(self.original_doc, temp)
+            print(diff)
+            diff_view = fromstring(diff)
             self.original_doc = temp
             data['insert'] = {"/HTML/BODY/APP": temp}
         data['vars'] = {}

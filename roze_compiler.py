@@ -1,17 +1,16 @@
 import os #Convert("C:\\Users\\shrik.HOME-PC02\\OneDrive\\Documents\\PythonTests\\Roze", "Test.roze")
+import uuid
 
 def ConvertSingleLine(line: str) -> str:
-    if line.replace('\t', '').replace(' ', '').startswith("~exe~") == True:
+    if line.replace('\t', '').replace(' ', '').startswith("~exe~"):
         line = line[(line.find("~exe~")+5):len(line)]        
     else:
+        #if line.find("~(") != -1:
+        #    position = line.find(">")
+        #    if position != -1:
+        #        line = line[:position] + " rozeid=\""+ uuid.uuid4().hex +"\"" + line[position:]
         line = line.replace("~(", "' + str(")
         line = line.replace(")~", ") + '")
-        #if line.find(" ~onclick=") != -1:
-        line = line.replace("~onclick=", "rozeclick=")
-        line = line.replace("~onhover=", "rozehover=")
-            #end = line.find("]~") + 2
-            #start = line.find(" ~[onclick=")
-            #line = line[0:start] + line[end:len(line)]
         line = "temp = temp + '" + line + "\\n' "
     return line
 
@@ -19,14 +18,14 @@ def ConvertFile(temp: str) -> str:
     splitTemp = temp.splitlines()
     num = 2
     for lineNum in range(len(splitTemp)):
-        if splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('~') == True and splitTemp[lineNum].endswith('{~') == True:
+        if splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('~') and splitTemp[lineNum].endswith('{~'):
             tempTwo = ""
             for x in range(num):
                 tempTwo = tempTwo + '    '
             start = splitTemp[lineNum].find('~')
             splitTemp[lineNum] = tempTwo + splitTemp[lineNum][start+1:-2] + ":"
             num = num + 1
-        elif splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('~}') == True:
+        elif splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('~}'):
             num = num - 1
             tempTwo = ""
             for x in range(num):

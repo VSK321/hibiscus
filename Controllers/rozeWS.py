@@ -92,7 +92,7 @@ class Controller(controller.Controller):
             #    elif s[0] == "+":
             #        print(u'Add "{}" from position {}'.format(s[-1], i))
             diff = htmldiff(self.original_doc, temp)
-            print(diff)
+            #print(diff)
             diff_view = fromstring(diff)
             self.original_doc = temp
             data['insert'] = {"/HTML/BODY/APP": temp}

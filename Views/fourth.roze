@@ -1,0 +1,29 @@
+<style>
+    #menu ul {
+        margin: ~(self.val)~px;
+        padding: 0px;
+        list-style-type: none;
+    }
+
+    #menu a {
+        display: block;
+        width: 8em;
+        color: white;
+        background-color: #000099;
+        text-decoration: none;
+        text-align: center;
+    }
+
+        #menu a:hover {
+            background-color: #6666AA;
+        }
+</style>
+
+<div id="menu">
+    <ul>
+        <li><a href="http://www.amazon.com">amazon</a></li>
+        <li><a href="http://www.apple.com">apple</a></li>
+        <li><a href="http://www.google.com">google</a></li>
+    </ul>
+    <button class="btn btn-primary" rozeclick="clicker">Click Me</button>
+</div>

@@ -50,11 +50,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Views\Counter.roze.py" />
+    <Compile Include="Views\first.roze.py" />
+    <Compile Include="Views\fourth.roze.py" />
     <Compile Include="Views\Hidden.roze.py" />
     <Compile Include="Views\Home.roze.py" />
     <Compile Include="Views\Input.roze.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Views\second.roze.py" />
+    <Compile Include="Views\third.roze.py" />
     <Compile Include="Views\_error.roze.py" />
     <Compile Include="websocket.py" />
   </ItemGroup>
@@ -77,11 +81,15 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="Views\Counter.roze" />
+    <Content Include="Views\first.roze" />
+    <Content Include="Views\fourth.roze" />
     <Content Include="Views\Hidden.roze" />
     <Content Include="Views\Home.roze" />
     <Content Include="Views\Input.roze">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="Views\second.roze" />
+    <Content Include="Views\third.roze" />
     <Content Include="Views\_error.roze">
       <SubType>Code</SubType>
     </Content>

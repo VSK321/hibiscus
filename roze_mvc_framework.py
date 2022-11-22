@@ -1,3 +1,4 @@
+from types import ModuleType
 import roze_server_framework
 import roze_compiler
 import importlib
@@ -13,13 +14,13 @@ class MVC(roze_server_framework.HTTP_Server):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.Critical_View = {}
+        self.Critical_View: dict[str, ModuleType] = {}
 
-    async def HTML_Manager(self, page_view, softpath):
+    async def HTML_Manager(self, page_view, softpath) -> str:
         page_model = await self.Critical_View['MainLayout'].Page().main()
         return page_model
 
-    async def ViewHandlerAsync(self, softpath):
+    async def ViewHandlerAsync(self, softpath: str) -> bytes:
         sentData = ""
         headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': 'text/html', 'connection': 'close'}
         sentData = httpheaders.HTTP_Headers_Constructor(headers)
@@ -27,21 +28,21 @@ class MVC(roze_server_framework.HTTP_Server):
         sentData = sentData.encode()
         return sentData
 
-    async def ControllerHandlerAsync(self, conn, addr, http_headers, http_data, softpath):
+    async def ControllerHandlerAsync(self, conn: socket.socket, addr: socket._RetAddress, http_headers: httpheaders.HTTP_Headers, http_data: str, softpath: str) -> None:
         await app.funcs[softpath]['module'](**{'conn':conn, 'addr':addr, 'http_headers':http_headers, 'http_data':http_data, 'Critical_View':self.Critical_View}).main()
 
-    def PublicHandler(self, softpath):
+    def PublicHandler(self, softpath: str) -> bytes:
         headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': mimetypes.guess_type(softpath)[0], 'connection': 'close'}
         cwd = os.getcwd()
         sentData = httpheaders.HTTP_Headers_Constructor(headers)
         os.chdir(app.funcs[softpath]['hardpath'])
-        file = open(app.funcs[softpath]['file'], 'rb')
-        sentData = sentData.encode() + file.read()
-        file.close()
+        f = open(app.funcs[softpath]['file'], 'rb')
+        sentData = sentData.encode() + f.read()
+        f.close()
         os.chdir(cwd)
         return sentData
 
-    async def HTTPRequestManagerAsync(self, conn, addr, http_headers, http_data):
+    async def HTTPRequestManagerAsync(self, conn: socket.socket, addr: socket._RetAddress, http_headers: httpheaders.HTTP_Headers, http_data: str) -> None:
         loop = asyncio.get_event_loop()
         softpath = http_headers.Url###Check if softpath exists
         try:
@@ -64,7 +65,7 @@ class MVC(roze_server_framework.HTTP_Server):
             await loop.sock_sendall(conn, sentData)
             conn.close()
 
-    def Build(self):
+    def Build(self) -> None:
         print('Building...')
         cwd = os.getcwd()
         for f in os.listdir(os.getcwd()+'/Shared'):
@@ -134,12 +135,16 @@ class MVC(roze_server_framework.HTTP_Server):
             currControllerCode.close()
             importlib.import_module(name)
             os.remove(path[-1])
+            
+        for task in backgroundtasks.funcs.values:
+            task.main()
+
 
         os.chdir(cwd)
         print('Build successful.')
 
 #socket.gethostbyname(socket.gethostname())
-instance = MVC(socket.gethostbyname(socket.gethostname()), 80, 50)
+instance = MVC('127.0.0.1', 80, 50)
 instance.Build()
 #instance.Start_Server()
 try:

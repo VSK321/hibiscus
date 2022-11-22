@@ -1,0 +1,18 @@
+<style type="text/css">
+    .boxed {
+        text-align: center;
+        width: 600px;
+        background: green;
+        border: 1em solid #ffa500;
+    }
+
+    .shadow {
+        color: orange;
+        text-shadow: 6px 6px 0 #566074;
+        font-size: 64px;
+    }
+</style>
+
+<div class="shadow">
+    Hello World
+</div>

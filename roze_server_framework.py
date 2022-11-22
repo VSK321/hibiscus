@@ -6,17 +6,17 @@ import asyncio
 
 class HTTP_Server:
 
-    def __init__(self, host, port, backlog):
-        self.Host = host
-        self.Port = port
-        self.Backlog = backlog
-        self.Server_Running = False
-        self.print_lock = threading.Lock()
-        self.thread_count_lock = threading.Lock()
-        self.request_manager_lock = threading.Lock()
+    def __init__(self, host: str, port: int, backlog: int):
+        self.Host: str = host
+        self.Port: int = port
+        self.Backlog: int = backlog
+        self.Server_Running: bool = False
+        self.print_lock: threading.Lock = threading.Lock()
+        self.thread_count_lock: threading.Lock = threading.Lock()
+        self.request_manager_lock: threading.Lock = threading.Lock()
 
 
-    async def ConnectionManagerAsync(self, conn, addr):
+    async def ConnectionManagerAsync(self, conn: socket.socket, addr: socket._RetAddress) -> None:
         loop = asyncio.get_event_loop()
         data = (await loop.sock_recv(conn, 4096)).decode('utf8', 'ignore')
         try:
@@ -27,7 +27,7 @@ class HTTP_Server:
             await loop.sock_sendall(conn, sentData.encode('utf8'))
             conn.close()
 
-    def AcceptLockThread(self):
+    def AcceptLockThread(self) -> None:
         while self.Server_Running:
             time.sleep(5)
             if self.Server_Running:

@@ -73,15 +73,51 @@ class Controller(controller.Controller):
         if data['path'].find('/MAIN') != -1:
             if data['event'] == "input":
                 #print(data['vars'][data['path']])
-                update = getattr(self.page_view, method)(data['vars'][data['path']])
+                methods = method.split(".")
+                update = self.page_view
+                for method in range(len(methods)):
+                    if method == len(methods) - 1:
+                        update = getattr(update, methods[method])(data['vars'][data['path']])
+                        continue
+                    if methods[method].endswith("()"):
+                        update = getattr(update, methods[method][:-2])()
+                        continue
+                    update = getattr(update, methods[method])
             else:
-                update = getattr(self.page_view, method)()
+                methods = method.split(".")
+                update = self.page_view
+                for method in range(len(methods)):
+                    if method == len(methods) - 1:
+                        update = getattr(update, methods[method])()
+                        continue
+                    if methods[method].endswith("()"):
+                        update = getattr(update, methods[method][:-2])()
+                        continue
+                    update = getattr(update, methods[method])
         else:
             if data['event'] == "input":
-                update = getattr(self.app_view, method)(*data['vars'][data['path']])
+                methods = method.split(".")
+                update = self.app_view
+                for method in range(len(methods)):
+                    if method == len(methods) - 1:
+                        update = getattr(update, methods[method])(data['vars'][data['path']])
+                        continue
+                    if methods[method].endswith("()"):
+                        update = getattr(update, methods[method][:-2])()
+                        continue
+                    update = getattr(update, methods[method])
             else:
-                update = getattr(self.app_view, method)()
-        if update == True:
+                methods = method.split(".")
+                update = self.app_view
+                for method in range(len(methods)):
+                    if method == len(methods) - 1:
+                        update = getattr(update, methods[method])()
+                        continue
+                    if methods[method].endswith("()"):
+                        update = getattr(update, methods[method][:-2])()
+                        continue
+                    update = getattr(update, methods[method])
+        if update:
             temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
             page_view = fromstring(temp)
             tree = etree.ElementTree(page_view)

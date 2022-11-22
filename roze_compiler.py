@@ -64,7 +64,7 @@ def Convert(path: str, fileName: str) -> None:
     #os.chdir(cwd + "/g")
     #print(microcontrollerData)
     file = open((fileName[:-5]+".py"), 'w')
-    compiledFile = microcontrollerData + '\n    async def main(self):\n        temp = ""' + compiledFile + '\n        return temp'
+    compiledFile = microcontrollerData + '\n    async def main(self, page_change=None):\n        temp = ""' + compiledFile + '\n        if page_change != None:    temp = super()._pageChange(temp, page_change)\n        return temp'
     file.write((compiledFile))
     file.close()
     #os.chdir(cwd)

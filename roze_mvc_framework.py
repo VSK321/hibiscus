@@ -28,7 +28,7 @@ class MVC(roze_server_framework.HTTP_Server):
         sentData = sentData.encode()
         return sentData
 
-    async def ControllerHandlerAsync(self, conn: socket.socket, addr: socket._RetAddress, http_headers: httpheaders.HTTP_Headers, http_data: str, softpath: str) -> None:
+    async def ControllerHandlerAsync(self, conn: socket.socket, addr, http_headers: httpheaders.HTTP_Headers, http_data: str, softpath: str) -> None:
         await app.funcs[softpath]['module'](**{'conn':conn, 'addr':addr, 'http_headers':http_headers, 'http_data':http_data, 'Critical_View':self.Critical_View}).main()
 
     def PublicHandler(self, softpath: str) -> bytes:
@@ -42,7 +42,7 @@ class MVC(roze_server_framework.HTTP_Server):
         os.chdir(cwd)
         return sentData
 
-    async def HTTPRequestManagerAsync(self, conn: socket.socket, addr: socket._RetAddress, http_headers: httpheaders.HTTP_Headers, http_data: str) -> None:
+    async def HTTPRequestManagerAsync(self, conn: socket.socket, addr, http_headers: httpheaders.HTTP_Headers, http_data: str) -> None:
         loop = asyncio.get_event_loop()
         softpath = http_headers.Url###Check if softpath exists
         try:
@@ -136,7 +136,7 @@ class MVC(roze_server_framework.HTTP_Server):
             importlib.import_module(name)
             os.remove(path[-1])
             
-        for task in backgroundtasks.funcs.values:
+        for task in backgroundtasks.funcs:
             task.main()
 
 

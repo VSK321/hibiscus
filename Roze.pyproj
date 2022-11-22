@@ -31,6 +31,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="httpheaders.py" />
+    <Compile Include="inner_implement.py" />
     <Compile Include="roze_compiler.py">
       <SubType>Code</SubType>
     </Compile>

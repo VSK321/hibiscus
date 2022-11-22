@@ -16,7 +16,7 @@ class HTTP_Server:
         self.request_manager_lock: threading.Lock = threading.Lock()
 
 
-    async def ConnectionManagerAsync(self, conn: socket.socket, addr: socket._RetAddress) -> None:
+    async def ConnectionManagerAsync(self, conn: socket.socket, addr) -> None:
         loop = asyncio.get_event_loop()
         data = (await loop.sock_recv(conn, 4096)).decode('utf8', 'ignore')
         try:

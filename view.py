@@ -11,7 +11,7 @@ class View(object):
         main = main.splitlines()
         new_main = ""
         for line in main:
-            l = re.findall("\sroze[a-z]+=\"[a-zA-Z]+\"", line)
+            l = re.findall("\srose[a-z]+=\"[a-zA-Z]+\"", line)
             for v in l:
                 code = v.split("\"")[-2]
                 line = line.replace(code, change+"."+code)

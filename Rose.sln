@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Roze", "Roze.pyproj", "{5F0F5372-4A11-4DED-AB2F-F7895979B5E7}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Rose", "Rose.pyproj", "{5F0F5372-4A11-4DED-AB2F-F7895979B5E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

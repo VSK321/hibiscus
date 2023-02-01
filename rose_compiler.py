@@ -1,4 +1,4 @@
-import os #Convert("C:\\Users\\shrik.HOME-PC02\\OneDrive\\Documents\\PythonTests\\Roze", "Test.roze")
+import os #Convert("C:\\Users\\shrik.HOME-PC02\\OneDrive\\Documents\\PythonTests\\Roze", "Test.rose")
 import uuid
 
 def ConvertSingleLine(line: str) -> str:
@@ -8,7 +8,7 @@ def ConvertSingleLine(line: str) -> str:
         #if line.find("~(") != -1:
         #    position = line.find(">")
         #    if position != -1:
-        #        line = line[:position] + " rozeid=\""+ uuid.uuid4().hex +"\"" + line[position:]
+        #        line = line[:position] + " roseid=\""+ uuid.uuid4().hex +"\"" + line[position:]
         line = line.replace("~(", "' + str(")
         line = line.replace(")~", ") + '")
         line = "temp = temp + '" + line + "\\n' "

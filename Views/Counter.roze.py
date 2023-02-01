@@ -1,6 +1,5 @@
 import view
 from AppLoc import *
-#import Views.BedroomLight.roze
 import BedroomLight
 
 @app.set_route("/counter")

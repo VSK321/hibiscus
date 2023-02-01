@@ -70,7 +70,7 @@ class inner_page():
                 update = getattr(self.app_view, method)(*data['vars'][data['path']])
             else:
                 update = getattr(self.app_view, method)()
-        if update == True:
+        if update:
             temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
             page_view = fromstring(temp)
             tree = etree.ElementTree(page_view)

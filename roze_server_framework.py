@@ -18,22 +18,17 @@ class HTTP_Server:
 
     async def ConnectionManagerAsync(self, conn: socket.socket, addr) -> None:
         loop = asyncio.get_event_loop()
-        data = (await loop.sock_recv(conn, 4096)).decode('utf8', 'ignore')
         try:
+            data = (await loop.sock_recv(conn, 4096)).decode('utf8', 'ignore')
             http_headers, http_data = data.split('\r\n\r\n')
             await self.HTTPRequestManagerAsync(conn, addr, httpheaders.HTTP_Headers(http_headers), http_data)
         except ValueError:
             sentData = "".encode()
-            await loop.sock_sendall(conn, sentData.encode('utf8'))
+            await loop.sock_sendall(conn, sentData)
             conn.close()
-
-    def AcceptLockThread(self) -> None:
-        while self.Server_Running:
-            time.sleep(5)
-            if self.Server_Running:
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP) as s:
-                    s.connect((self.Host, self.Port))
-            
+        except Exception as e:
+            print(e)
+            conn.close()
 
     async def run_server(self):
         self.Server_Running = True

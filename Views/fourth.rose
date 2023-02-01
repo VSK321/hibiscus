@@ -25,5 +25,5 @@
         <li><a href="http://www.apple.com">apple</a></li>
         <li><a href="http://www.google.com">google</a></li>
     </ul>
-    <button class="btn btn-primary" rozeclick="clicker">Click Me</button>
+    <button class="btn btn-primary" roseclick="clicker">Click Me</button>
 </div>

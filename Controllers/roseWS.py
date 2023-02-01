@@ -9,7 +9,7 @@ import controller
 from AppLoc import *
 import asyncio
 
-@app.set_route("/_roze", True)
+@app.set_route("/_rose", True)
 class Controller(controller.Controller):
 
     def __init__(self, conn, addr, http_headers, http_data, Critical_View):
@@ -34,7 +34,7 @@ class Controller(controller.Controller):
         tree = etree.ElementTree(page_view)
         for el in page_view.xpath("//*"):
             for attr in el.attrib:
-                if attr.startswith("roze"):# and not attr.startswith("rozeid"):
+                if attr.startswith("rose"):# and not attr.startswith("roseid"):
                     #print(attr)
                     
                     self.paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "") + '/' + attr[4:]] = el.get(attr)
@@ -45,7 +45,7 @@ class Controller(controller.Controller):
                     except:
                         paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "")] = [attr[4:]]
                     #paths['/HTML/BODY/APP' + tree.getpath(el).upper()] = attr[4:]
-                #elif attr.startswith("rozeid"):
+                #elif attr.startswith("roseid"):
                 #    pass
         page_view = (tostring(page_view)).decode()
         #print(self.paths)

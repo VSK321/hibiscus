@@ -1,6 +1,6 @@
 from types import ModuleType
-import roze_server_framework
-import roze_compiler
+import rose_server_framework
+import rose_compiler
 import importlib
 import httpheaders
 import mimetypes
@@ -10,7 +10,7 @@ from AppLoc import *
 import asyncio
 import socket
 
-class MVC(roze_server_framework.HTTP_Server):
+class MVC(rose_server_framework.HTTP_Server):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -69,18 +69,18 @@ class MVC(roze_server_framework.HTTP_Server):
         print('Building...')
         cwd = os.getcwd()
         for f in os.listdir(os.getcwd()+'/Shared'):
-            if f.endswith('.roze'):
-                roze_compiler.Convert(os.getcwd()+'/Shared', f)
+            if f.endswith('.rose'):
+                rose_compiler.Convert(os.getcwd()+'/Shared', f)
         for f in os.listdir(os.getcwd()+'/Shared'):
-            if f.endswith('.roze'):
+            if f.endswith('.rose'):
                 #os.chdir(cwd + "/g")
                 self.Critical_View[f[0:-5]] = importlib.import_module(f[0:-5])
                 os.remove(f[0:-5] + ".py")
                # os.chdir(cwd)
-        #Discover all files within cwd and check for .roze and .py
-        views = glob.glob('./**/*.roze', recursive=True)
+        #Discover all files within cwd and check for .rose and .py
+        views = glob.glob('./**/*.rose', recursive=True)
         controllers = glob.glob('./*/**/*.py', recursive=True)
-        controllers = [controller for controller in controllers if not controller.endswith(".roze.py")]
+        controllers = [controller for controller in controllers if not controller.endswith(".rose.py")]
         os.chdir(cwd + "/root")
         public = glob.glob("./**/*.*", recursive=True)
         os.chdir(cwd)
@@ -103,7 +103,7 @@ class MVC(roze_server_framework.HTTP_Server):
             if len(path) == 1:
                 path = path[0].split("/")
                 divider = "/"
-            roze_compiler.Convert(divider.join(path[0:-1]), path[-1]);
+            rose_compiler.Convert(divider.join(path[0:-1]), path[-1]);
 
         for view in views:
             if view.startswith(".\\Shared") or view.startswith("./Shared"):

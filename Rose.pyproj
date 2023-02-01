@@ -3,13 +3,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>5f0f5372-4a11-4ded-ab2f-f7895979b5e7</ProjectGuid>
-    <ProjectHome>.</ProjectHome>
-    <StartupFile>roze_mvc_framework.py</StartupFile>
+    <ProjectHome>
+    </ProjectHome>
+    <StartupFile>rose_mvc_framework.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>Roze</Name>
+    <Name>Rose</Name>
     <RootNamespace>Roze</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -26,41 +27,41 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controllers\LightSwitchAPI.py" />
-    <Compile Include="Controllers\rozeWS.py" />
+    <Compile Include="Controllers\roseWS.py" />
     <Compile Include="Controllers\TestController.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="httpheaders.py" />
     <Compile Include="inner_implement.py" />
-    <Compile Include="roze_compiler.py">
+    <Compile Include="rose_compiler.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="roze_mvc_framework.py" />
-    <Compile Include="Roze.py" />
-    <Compile Include="roze_server_framework.py">
+    <Compile Include="rose_mvc_framework.py" />
+    <Compile Include="Rose.py" />
+    <Compile Include="rose_server_framework.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Shared\App.roze.py" />
-    <Compile Include="Shared\MainLayout.roze.py" />
-    <Compile Include="Shared\NavMenu.roze.py" />
+    <Compile Include="Shared\App.rose.py" />
+    <Compile Include="Shared\MainLayout.rose.py" />
+    <Compile Include="Shared\NavMenu.rose.py" />
     <Compile Include="view.py" />
-    <Compile Include="Views\BedroomLight.roze.py">
+    <Compile Include="Views\BedroomLight.rose.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\Calculator.roze.py">
+    <Compile Include="Views\Calculator.rose.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\Counter.roze.py" />
-    <Compile Include="Views\first.roze.py" />
-    <Compile Include="Views\fourth.roze.py" />
-    <Compile Include="Views\Hidden.roze.py" />
-    <Compile Include="Views\Home.roze.py" />
-    <Compile Include="Views\Input.roze.py">
+    <Compile Include="Views\Counter.rose.py" />
+    <Compile Include="Views\first.rose.py" />
+    <Compile Include="Views\fourth.rose.py" />
+    <Compile Include="Views\Hidden.rose.py" />
+    <Compile Include="Views\Home.rose.py" />
+    <Compile Include="Views\Input.rose.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\second.roze.py" />
-    <Compile Include="Views\third.roze.py" />
-    <Compile Include="Views\_error.roze.py" />
+    <Compile Include="Views\second.rose.py" />
+    <Compile Include="Views\third.rose.py" />
+    <Compile Include="Views\_error.rose.py" />
     <Compile Include="websocket.py" />
   </ItemGroup>
   <ItemGroup>
@@ -71,27 +72,27 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="appsettings.json" />
-    <Content Include="Shared\App.roze" />
-    <Content Include="Shared\MainLayout.roze" />
-    <Content Include="Shared\NavMenu.roze" />
-    <Content Include="root\roze.server.js" />
-    <Content Include="Views\BedroomLight.roze">
+    <Content Include="Shared\App.rose" />
+    <Content Include="Shared\MainLayout.rose" />
+    <Content Include="Shared\NavMenu.rose" />
+    <Content Include="root\rose.server.js" />
+    <Content Include="Views\BedroomLight.rose">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="Views\Calculator.roze">
+    <Content Include="Views\Calculator.rose">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="Views\Counter.roze" />
-    <Content Include="Views\first.roze" />
-    <Content Include="Views\fourth.roze" />
-    <Content Include="Views\Hidden.roze" />
-    <Content Include="Views\Home.roze" />
-    <Content Include="Views\Input.roze">
+    <Content Include="Views\Counter.rose" />
+    <Content Include="Views\first.rose" />
+    <Content Include="Views\fourth.rose" />
+    <Content Include="Views\Hidden.rose" />
+    <Content Include="Views\Home.rose" />
+    <Content Include="Views\Input.rose">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="Views\second.roze" />
-    <Content Include="Views\third.roze" />
-    <Content Include="Views\_error.roze">
+    <Content Include="Views\second.rose" />
+    <Content Include="Views\third.rose" />
+    <Content Include="Views\_error.rose">
       <SubType>Code</SubType>
     </Content>
     <Content Include="web.config" />

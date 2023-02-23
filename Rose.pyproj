@@ -32,12 +32,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="httpheaders.py" />
-    <Compile Include="inner_implement.py" />
     <Compile Include="rose_compiler.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="rose_mvc_framework.py" />
-    <Compile Include="Rose.py" />
     <Compile Include="rose_server_framework.py">
       <SubType>Code</SubType>
     </Compile>

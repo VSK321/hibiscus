@@ -6,7 +6,7 @@ from AppLoc import *
 class Page(view.View):
 
     def __init__(self):
-        self.path = "/BedroomLight"
+        pass
 
     def TurnOn(self):
         #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)

@@ -1,6 +1,13 @@
 <p>Counter is at ~(self.x)~ </p>
 <button class="btn btn-primary" roseclick="AddOne">Add</button>
 
-<div>
+~if self.x > 5{~
+<p>Counter is greater than 5</p>
+~}
+~else{~
+<p>Counter is less than or equal to 5</p>
+~}
+
+<!--<div>
     ~("""await self.first.main("first")""")~
-</div>
+</div>-->

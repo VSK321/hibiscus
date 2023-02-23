@@ -8,6 +8,7 @@ import difflib
 import controller
 from AppLoc import *
 import asyncio
+import sys
 
 @app.set_route("/_rose", True)
 class Controller(controller.Controller):
@@ -60,7 +61,15 @@ class Controller(controller.Controller):
 
     async def InfoWebSocketAsync(self, data):
         try:
-            self.page_view = app.funcs[data['softpath'].lower()]['module']()
+            found_pattern = None
+            subs = {}
+            for path_to_re in app.paths_to_re:
+                if bool(path_to_re[0].fullmatch(data['softpath'])):
+                    found_pattern = path_to_re[1]
+                    subs = {tup[0][0]: getattr(sys.modules['builtins'], tup[0][1])(tup[1]) for tup in zip(path_to_re[2], data['softpath'].split("/")[1:]) if tup[0] != None}
+                    break
+            self.page_view = app.funcs[found_pattern]['module'](**subs)
+            #self.page_view = app.funcs[data['softpath'].lower()]['module']()
         except:
             self.page_view = app.funcs['/_error']['module']()
         temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())

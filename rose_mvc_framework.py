@@ -1,3 +1,4 @@
+from builtins import KeyError
 from types import ModuleType
 import rose_server_framework
 import rose_compiler
@@ -9,6 +10,7 @@ import glob
 from AppLoc import *
 import asyncio
 import socket
+import sys
 
 class MVC(rose_server_framework.HTTP_Server):
 
@@ -20,16 +22,16 @@ class MVC(rose_server_framework.HTTP_Server):
         page_model = await self.Critical_View['MainLayout'].Page().main()
         return page_model
 
-    async def ViewHandlerAsync(self, softpath: str) -> bytes:
+    async def ViewHandlerAsync(self, softpath: str, recognised_pattern: str, subs: dict[str, object]) -> bytes:
         sentData = ""
         headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': 'text/html', 'connection': 'close'}
         sentData = httpheaders.HTTP_Headers_Constructor(headers)
-        sentData = sentData + await self.HTML_Manager(await app.funcs[softpath]['module']().main(), softpath)
+        sentData = sentData + await self.HTML_Manager(await app.funcs[recognised_pattern]['module'](**subs).main(), softpath)
         sentData = sentData.encode()
         return sentData
 
-    async def ControllerHandlerAsync(self, conn: socket.socket, addr, http_headers: httpheaders.HTTP_Headers, http_data: str, softpath: str) -> None:
-        await app.funcs[softpath]['module'](**{'conn':conn, 'addr':addr, 'http_headers':http_headers, 'http_data':http_data, 'Critical_View':self.Critical_View}).main()
+    async def ControllerHandlerAsync(self, conn: socket.socket, addr, http_headers: httpheaders.HTTP_Headers, http_data: str, softpath: str, recognised_pattern: str, subs: dict[str, object]) -> None:
+        await app.funcs[recognised_pattern]['module'](**{'conn':conn, 'addr':addr, 'http_headers':http_headers, 'http_data':http_data, 'Critical_View':self.Critical_View}).main()
 
     def PublicHandler(self, softpath: str) -> bytes:
         headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': mimetypes.guess_type(softpath)[0], 'connection': 'close'}
@@ -46,22 +48,35 @@ class MVC(rose_server_framework.HTTP_Server):
         loop = asyncio.get_event_loop()
         softpath = http_headers.Url###Check if softpath exists
         try:
-            softpath_Type = app.funcs[softpath]['type']
+            #Match softpath pattern
+            found_pattern = None
+            subs = {}
+            for path_to_re in app.paths_to_re:
+                if bool(path_to_re[0].fullmatch(softpath)):
+                    found_pattern = path_to_re[1]
+                    subs = {tup[0][0]: getattr(sys.modules['builtins'], tup[0][1])(tup[1]) for tup in zip(path_to_re[2], softpath.split("/")[1:]) if tup[0] != None}
+                    break
+            if found_pattern == None:
+                softpath_Type = app.funcs[softpath]['type']
+            else:
+                softpath_Type = app.funcs[found_pattern]['type']
             if softpath_Type == 'view':
                 sentData = "HTTP/1.1 200 OK\r\n"
-                sentData = sentData.encode() + await self.ViewHandlerAsync(softpath)
+                sentData = sentData.encode() + await self.ViewHandlerAsync(softpath, found_pattern, subs)
                 await loop.sock_sendall(conn, sentData)
                 conn.close()
             elif softpath_Type == 'controller':
-                await self.ControllerHandlerAsync(conn, addr, http_headers, http_data, softpath)
+                await self.ControllerHandlerAsync(conn, addr, http_headers, http_data, softpath, found_pattern, subs)
             elif softpath_Type == 'public':
+                if found_pattern != None:
+                    raise KeyError
                 sentData = "HTTP/1.1 200 OK\r\n"
                 sentData = sentData.encode() + self.PublicHandler(softpath)
                 await loop.sock_sendall(conn, sentData)
                 conn.close()
         except KeyError:
             sentData = "HTTP/1.1 404 Not Found\r\n"
-            sentData = sentData.encode() + await self.ViewHandlerAsync('/_error')
+            sentData = sentData.encode() + await self.ViewHandlerAsync('/_error', found_pattern, subs)
             await loop.sock_sendall(conn, sentData)
             conn.close()
 
@@ -134,7 +149,7 @@ class MVC(rose_server_framework.HTTP_Server):
             currControllerCode.write(data)
             currControllerCode.close()
             importlib.import_module(name)
-            os.remove(path[-1])
+            #os.remove(path[-1])
             
         for task in backgroundtasks.funcs:
             task.main()

@@ -61,6 +61,7 @@ class Controller(controller.Controller):
 
     async def InfoWebSocketAsync(self, data):
         try:
+            data['softpath'] = data['softpath'].lower()
             found_pattern = None
             subs = {}
             for path_to_re in app.paths_to_re:

@@ -9,7 +9,6 @@ class Controller:
         self.http_headers = http_headers
         self.http_data = http_data
         self.Critical_View = Critical_View
-        self.path = "/" + str(uuid.uuid4())
 
     def reroute(self, path):
         sentData = "HTTP/1.1 302 Found\r\n"
@@ -23,4 +22,3 @@ class Controller:
         sentData += data
         self.conn.send(sentData.encode())
         self.conn.close()
-

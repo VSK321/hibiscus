@@ -2,6 +2,7 @@ import functools
 from ctypes import Union
 import re
 import uuid
+from threading import Lock
 
 class Logger:
     def __init__(self, logFunc) -> None:
@@ -19,13 +20,41 @@ class Logger:
         return wrapper
 
 
+def partial_implementation(klass):
+    def wrapper(func):
+        setattr(klass, func.__name__, func)
+        return func
+    return wrapper
+
+class Singletons:
+    def __init__(self):
+        self.singletons: list = []
+        self.access_lock: Lock = Lock()
+
+    def register_singleton(self):
+        def wrapper(klass):
+            self.singletons.append(klass())
+            
+            @functools.wraps(klass)
+            def inner_wrapper(*args, **kwargs):
+                return klass(*args, **kwargs)
+            return inner_wrapper
+        return wrapper
+
+    def get_singleton(self, obj_type):
+        for singleton in self.singletons:
+            if type(singleton) == obj_type:
+                return singleton
+        raise KeyError
+
+
 class BackgroundTasks:
     def __init__(self):
         self.funcs: list[function] = []
 
     def register_task(self):
         def wrapper(func):
-            self.funcs.append(func)
+            self.funcs.append(func())
             
             @functools.wraps(func)
             def inner_wrapper(*args, **kwargs):
@@ -34,13 +63,16 @@ class BackgroundTasks:
         return wrapper
 
 def convert_path(path: str):
-    #Convention shall be /value/{x:str}/{y:int,3} and should be converted to /value/[a-z]+/[0-9]{3}
+    #Convention shall be /value/{x:str}/{y:int,3}/{z:str,} and should be converted to /value/[a-z]+/[0-9]{3}[/]?[a-z]*
     converted_path = ""
     substitions = []
     path = path.split("/")[1:]
     for p in path:
         if len(p) > 2 and p[0] == "{" and p[-1] == "}":
-            substitions.append(tuple((p[1:-1]).split(":")))
+            split_val = (p[1:-1]).split(":")
+            if split_val[1].find(",") != -1:
+                split_val[1] = split_val[1].split(",")[0]
+            substitions.append(tuple(split_val))
             p = (p[1:-1]).split(":")[1]
             length = "-1"
             if p.find(",") != -1:
@@ -52,7 +84,11 @@ def convert_path(path: str):
             elif p == "int":
                 converted_path += "/[0-9]"
 
-            if length != "-1":
+
+            if length == "":
+                converted_path += "*"
+                converted_path = converted_path[0:-7] + "[/]?" + converted_path[-6:]
+            elif length != "-1":
                 converted_path += "{" + length + "}"
             else:
                 converted_path += "+"
@@ -83,3 +119,4 @@ class App:
 
 app = App()
 backgroundtasks = BackgroundTasks()
+singletons = Singletons()

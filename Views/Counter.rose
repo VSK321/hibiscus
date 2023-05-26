@@ -1,13 +1,15 @@
 <p>Counter is at ~(self.x)~ </p>
 <button class="btn btn-primary" roseclick="AddOne">Add</button>
+<button class="btn btn-primary" roseclick="SubOne">Subtract</button>
 
-~if self.x > 5{~
+~if self.x > 5{
 <p>Counter is greater than 5</p>
-~}
-~else{~
+}
+~else{
 <p>Counter is less than or equal to 5</p>
-~}
+    ~if self.x == 5{
+<p>It is at 5 currently</p>
+    }
+    ~exe~temp += (lambda: "It is at one currently" if self.x == 1 else "")()
+}
 
-<!--<div>
-    ~("""await self.first.main("first")""")~
-</div>-->

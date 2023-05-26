@@ -18,14 +18,14 @@ def ConvertFile(temp: str) -> str:
     splitTemp = temp.splitlines()
     num = 2
     for lineNum in range(len(splitTemp)):
-        if splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('~') and splitTemp[lineNum].endswith('{~'):
+        if splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('~') and splitTemp[lineNum].endswith('{'):
             tempTwo = ""
             for x in range(num):
                 tempTwo = tempTwo + '    '
             start = splitTemp[lineNum].find('~')
-            splitTemp[lineNum] = tempTwo + splitTemp[lineNum][start+1:-2] + ":"
+            splitTemp[lineNum] = tempTwo + splitTemp[lineNum][start+1:-1] + ":"
             num = num + 1
-        elif splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('~}'):
+        elif splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('}') and num > 2:
             num = num - 1
             tempTwo = ""
             for x in range(num):

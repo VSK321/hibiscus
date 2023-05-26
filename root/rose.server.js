@@ -76,6 +76,9 @@ const observer = new MutationObserver(function () {
         currElem.onclick = function (e) {
             e = e || window.event;
             var element = e.target || e.srcElement;
+            if (element.pathname.substring(0, 2) == "/_") {
+                window.location.replace("/" + element.pathname.substring(2, element.pathname.length));
+            }
             //document.location.pathname = element.pathname;
             window.history.pushState('', '', element.pathname);
             message['softpath'] = element.pathname;

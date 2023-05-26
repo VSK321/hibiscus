@@ -74,7 +74,8 @@ class MVC(rose_server_framework.HTTP_Server):
                 sentData = sentData.encode() + self.PublicHandler(softpath)
                 await loop.sock_sendall(conn, sentData)
                 conn.close()
-        except KeyError:
+        except KeyError as e:
+            print(e)
             sentData = "HTTP/1.1 404 Not Found\r\n"
             sentData = sentData.encode() + await self.ViewHandlerAsync('/_error', found_pattern, subs)
             await loop.sock_sendall(conn, sentData)
@@ -149,7 +150,7 @@ class MVC(rose_server_framework.HTTP_Server):
             currControllerCode.write(data)
             currControllerCode.close()
             importlib.import_module(name)
-            #os.remove(path[-1])
+            os.remove(path[-1])
             
         for task in backgroundtasks.funcs:
             task.main()

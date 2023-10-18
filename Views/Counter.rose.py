@@ -16,5 +16,9 @@ class Page(view.View):
     def SubOne(self):
         self.x -= 1
         return True
+    
+    def test(self, val=""):
+        self.x += int(val)
+        return True
 
     #~(await self.first.main("first"))~

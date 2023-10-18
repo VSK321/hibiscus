@@ -161,7 +161,7 @@ class MVC(rose_server_framework.HTTP_Server):
 
 #socket.gethostbyname(socket.gethostname())
 #instance = MVC(socket.gethostbyname(socket.gethostname()), 80, 50)
-instance = MVC("127.0.0.1", 80, 50)
+instance = MVC("192.168.0.24", 80, 50)
 instance.Build()
 #instance.Start_Server()
 try:

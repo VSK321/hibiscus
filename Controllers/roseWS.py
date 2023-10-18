@@ -22,6 +22,7 @@ class Controller(controller.Controller):
         self.Lock = threading.Lock()
         self.SoftPath = http_headers.Url
         self.paths = {}
+        self.path_values: dict = {}
         self.page_view = ""
         self.app_view = ""
         self.original_doc = ""
@@ -29,13 +30,14 @@ class Controller(controller.Controller):
     def HTML_Manager(self, page_view, app_view):
         paths = {}
         self.paths = {}
+        self.path_values = {}
         #print(page_view)
         page_view = app_view.replace("~appView~", page_view)
         page_view = fromstring(page_view)
         tree = etree.ElementTree(page_view)
         for el in page_view.xpath("//*"):
             for attr in el.attrib:
-                if attr.startswith("rose"):# and not attr.startswith("roseid"):
+                if attr.startswith("rose") and not attr.startswith("roseid"):
                     #print(attr)
                     
                     self.paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "") + '/' + attr[4:]] = el.get(attr)
@@ -46,8 +48,9 @@ class Controller(controller.Controller):
                     except:
                         paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "")] = [attr[4:]]
                     #paths['/HTML/BODY/APP' + tree.getpath(el).upper()] = attr[4:]
-                #elif attr.startswith("roseid"):
-                #    pass
+                elif attr.startswith("roseid"):
+                    self.path_values['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "")] = el.get(attr)
+                    el.attrib.pop(attr)
         page_view = (tostring(page_view)).decode()
         #print(self.paths)
         return page_view, paths
@@ -90,7 +93,10 @@ class Controller(controller.Controller):
                         update = getattr(update, methods[method])(data['vars'][data['path']])
                         continue
                     if methods[method].endswith("()"):
-                        update = getattr(update, methods[method][:-2])()
+                        if self.path_values.get(data['path']) != None:
+                            update = getattr(update, methods[method][:-2])(self.path_values[data['path']])
+                        else:
+                            update = getattr(update, methods[method][:-2])()
                         continue
                     update = getattr(update, methods[method])
             else:
@@ -98,10 +104,16 @@ class Controller(controller.Controller):
                 update = self.page_view
                 for method in range(len(methods)):
                     if method == len(methods) - 1:
-                        update = getattr(update, methods[method])()
+                        if self.path_values.get(data['path']) != None:
+                            update = getattr(update, methods[method])(self.path_values[data['path']])
+                        else:
+                            update = getattr(update, methods[method])()
                         continue
                     if methods[method].endswith("()"):
-                        update = getattr(update, methods[method][:-2])()
+                        if self.path_values.get(data['path']) != None:
+                            update = getattr(update, methods[method][:-2])(self.path_values[data['path']])
+                        else:
+                            update = getattr(update, methods[method][:-2])()
                         continue
                     update = getattr(update, methods[method])
         else:
@@ -113,7 +125,10 @@ class Controller(controller.Controller):
                         update = getattr(update, methods[method])(data['vars'][data['path']])
                         continue
                     if methods[method].endswith("()"):
-                        update = getattr(update, methods[method][:-2])()
+                        if self.path_values.get(data['path']) != None:
+                            update = getattr(update, methods[method][:-2])(self.path_values[data['path']])
+                        else:
+                            update = getattr(update, methods[method][:-2])()
                         continue
                     update = getattr(update, methods[method])
             else:
@@ -121,10 +136,16 @@ class Controller(controller.Controller):
                 update = self.app_view
                 for method in range(len(methods)):
                     if method == len(methods) - 1:
-                        update = getattr(update, methods[method])()
+                        if self.path_values.get(data['path']) != None:
+                            update = getattr(update, methods[method])(self.path_values[data['path']])
+                        else:
+                            update = getattr(update, methods[method])()
                         continue
                     if methods[method].endswith("()"):
-                        update = getattr(update, methods[method][:-2])()
+                        if self.path_values.get(data['path']) != None:
+                            update = getattr(update, methods[method][:-2])(self.path_values[data['path']])
+                        else:
+                            update = getattr(update, methods[method][:-2])()
                         continue
                     update = getattr(update, methods[method])
         if update:

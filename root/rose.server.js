@@ -26,6 +26,7 @@ function OnEvent(event) {
     message["event"] = event.type;
     message["type"] = 'update';
     if (event.type == "input") {
+        message['vars'] = {};
         message['vars'][message['path']] = this.value;
     }
     socket.send(JSON.stringify(message));

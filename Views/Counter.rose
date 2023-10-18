@@ -1,6 +1,7 @@
 <p>Counter is at ~(self.x)~ </p>
 <button class="btn btn-primary" roseclick="AddOne">Add</button>
 <button class="btn btn-primary" roseclick="SubOne">Subtract</button>
+<button class="btn btn-primary" roseclick="test" roseid="~(self.x)~">Add Counter Value</button>
 
 ~if self.x > 5{
 <p>Counter is greater than 5</p>

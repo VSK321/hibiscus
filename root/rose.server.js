@@ -36,6 +36,7 @@ function Init() {
     socket.onopen = function (event) {
         message = {
             "type": "info",
+            "priorSoftPath": document.location.pathname.toString(),
             "softpath": document.location.pathname.toString(),
             "vars": {},
             "event": "",
@@ -88,6 +89,7 @@ const observer = new MutationObserver(function () {
             message["type"] = 'info';
             console.log(message);
             socket.send(JSON.stringify(message));
+            message.priorSoftPath = element.pathname;
             return false;
         }
     }

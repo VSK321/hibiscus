@@ -26,6 +26,7 @@ class Controller(controller.Controller):
         self.page_view = ""
         self.app_view = ""
         self.original_doc = ""
+        self.access_paths: list[tuple[str, str]] = []
 
     def HTML_Manager(self, page_view, app_view):
         paths = {}
@@ -65,6 +66,8 @@ class Controller(controller.Controller):
     async def InfoWebSocketAsync(self, data):
         try:
             data['softpath'] = data['softpath'].lower()
+            self.access_paths.append((self.SoftPath, data['softpath']))
+            self.SoftPath = data['softpath']
             found_pattern = None
             subs = {}
             for path_to_re in app.paths_to_re:
@@ -201,6 +204,7 @@ class Controller(controller.Controller):
                 data = (await loop.sock_recv(self.conn, 4096))
                 data, fin, opcode = websocket.WebSocketDataDecoder(data)
             self.conn.close()
+            EMCPG.update_probabilities(self.access_paths)
         except Exception as e:
             print(e)
 

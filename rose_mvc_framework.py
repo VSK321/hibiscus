@@ -8,9 +8,11 @@ import mimetypes
 import os
 import glob
 from AppLoc import *
+import AppLoc
 import asyncio
 import socket
 import sys
+import pickle
 
 class MVC(rose_server_framework.HTTP_Server):
 
@@ -157,6 +159,15 @@ class MVC(rose_server_framework.HTTP_Server):
 
 
         os.chdir(cwd)
+        try:
+            file = open("./models/EMCPG.txt", 'rb')
+            AppLoc.EMCPG = pickle.loads(file.read())
+            file.close()
+        except:
+            file = open("./models/EMCPG.txt", 'w')
+            file.close()
+            AppLoc.EMCPG.fill_funcs_matrix(list(app.funcs.keys()))
+            #Check to extend funcs list ---------------------------------------------------------------
         print('Build successful.')
 
 #socket.gethostbyname(socket.gethostname())
@@ -167,5 +178,7 @@ instance.Build()
 try:
     asyncio.run(instance.run_server())
 except:
-    pass
+    file = open("./models/EMCPG.txt", 'wb')
+    file.write(pickle.dumps(AppLoc.EMCPG))
+    file.close()
 

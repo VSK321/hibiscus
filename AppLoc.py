@@ -116,7 +116,49 @@ class App:
             return inner_wrapper
         return wrapper
 
+class ProbabilityGeneralizerHelper:
+    def __init__(self, length):
+        self.ratios = [0 for x in range(length)]
+        self.curr_max = 0
+        self.curr_max_position = 0
+        
+    def update_ratio(self, position: int):
+        #self.ratios = [x * self.curr_max for x in self.ratios]
+        if (self.ratios[position] * self.curr_max) + 1 > self.curr_max:
+            self.curr_max_position = position
+        if position == self.curr_max_position:
+            self.curr_max += 1
+        self.ratios[position] += 1/self.curr_max
+    
+class ExpandableMarkovChainProbibilityGeneralizer:
+    
+    def __init__(self):
+        self.funcs_matrix: list[ProbabilityGeneralizerHelper] = []
+        self.funcs: list[str] = []
+    
+    def fill_funcs_matrix(self, funcs):
+        self.funcs: list[str] = funcs
+        self.funcs_matrix = [ProbabilityGeneralizerHelper(len(self.funcs)) for x in range(len(self.funcs))]
+        
+    def add_data_point(self, start: str, end: str):
+        try:
+            self.funcs_matrix[self.funcs.index(start)].update_ratio(self.funcs.index(end))
+        except:
+            pass
+       
+    def update_probabilities(self, data_points: list[tuple[str, str]]):
+        for data_point in data_points:
+            self.add_data_point(data_point[0], data_point[1])
+        print("Probabilities Updated")
+    
+    def get_path_probability(self, start: str, end: str) -> float:
+        try:
+            return self.funcs_matrix[self.funcs.index(start)].ratios[self.funcs.index(end)]
+        except:
+            return 0
 
 app = App()
 backgroundtasks = BackgroundTasks()
 singletons = Singletons()
+EMCPG = ExpandableMarkovChainProbibilityGeneralizer()
+

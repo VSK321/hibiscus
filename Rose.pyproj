@@ -32,6 +32,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="httpheaders.py" />
+    <Compile Include="inner_implement.py" />
     <Compile Include="rose_compiler.py">
       <SubType>Code</SubType>
     </Compile>
@@ -71,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="appsettings.json" />
+    <Content Include="root\favicon.ico" />
     <Content Include="Shared\App.rose" />
     <Content Include="Shared\MainLayout.rose" />
     <Content Include="Shared\NavMenu.rose" />

@@ -11,6 +11,6 @@
     ~if self.x == 5{
 <p>It is at 5 currently</p>
     }
-    ~exe~temp += (lambda: "It is at one currently" if self.x == 1 else "")()
+    ~exe~rose_line += (lambda: "It is at one currently" if self.x == 1 else "")()
 }
 

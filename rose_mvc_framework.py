@@ -13,6 +13,7 @@ import asyncio
 import socket
 import sys
 import pickle
+import traceback
 
 class MVC(rose_server_framework.HTTP_Server):
 
@@ -20,15 +21,10 @@ class MVC(rose_server_framework.HTTP_Server):
         super().__init__(*args, **kwargs)
         self.Critical_View: dict[str, ModuleType] = {}
 
-    async def HTML_Manager(self, page_view, softpath) -> str:
-        page_model = await self.Critical_View['MainLayout'].Page().main()
-        return page_model
-
-    async def ViewHandlerAsync(self, softpath: str, recognised_pattern: str, subs: dict[str, object]) -> bytes:
-        sentData = ""
+    async def ViewHandlerAsync(self) -> bytes:
         headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': 'text/html', 'connection': 'close'}
         sentData = httpheaders.HTTP_Headers_Constructor(headers)
-        sentData = sentData + await self.HTML_Manager(await app.funcs[recognised_pattern]['module'](**subs).main(), softpath)
+        sentData = sentData + await self.Critical_View['MainLayout'].Page().main()
         sentData = sentData.encode()
         return sentData
 
@@ -64,7 +60,7 @@ class MVC(rose_server_framework.HTTP_Server):
                 softpath_Type = app.funcs[found_pattern]['type']
             if softpath_Type == 'view':
                 sentData = "HTTP/1.1 200 OK\r\n"
-                sentData = sentData.encode() + await self.ViewHandlerAsync(softpath, found_pattern, subs)
+                sentData = sentData.encode() + await self.ViewHandlerAsync()
                 await loop.sock_sendall(conn, sentData)
                 conn.close()
             elif softpath_Type == 'controller':
@@ -77,9 +73,9 @@ class MVC(rose_server_framework.HTTP_Server):
                 await loop.sock_sendall(conn, sentData)
                 conn.close()
         except KeyError as e:
-            print(e)
+            print('Page not found: ' + str(e))
             sentData = "HTTP/1.1 404 Not Found\r\n"
-            sentData = sentData.encode() + await self.ViewHandlerAsync('/_error', found_pattern, subs)
+            sentData = sentData.encode() + await self.ViewHandlerAsync()
             await loop.sock_sendall(conn, sentData)
             conn.close()
 
@@ -121,8 +117,8 @@ class MVC(rose_server_framework.HTTP_Server):
             if len(path) == 1:
                 path = path[0].split("/")
                 divider = "/"
-            rose_compiler.Convert(divider.join(path[0:-1]), path[-1]);
-
+            rose_compiler.Convert(divider.join(path[0:-1]), path[-1], True)
+            
         for view in views:
             if view.startswith(".\\Shared") or view.startswith("./Shared"):
                 continue
@@ -131,28 +127,27 @@ class MVC(rose_server_framework.HTTP_Server):
             if len(path) == 1:
                 path = path[0].split("/")
                 divider = "/"
-            name = path[-1][0:-5]
-            #os.chdir(cwd + "/g")
-            importlib.import_module(name)
-            os.remove(name + ".py")
+            value = '.'.join(view.split("\\")[1:])[:-5]
+            full_val = divider.join(path[0:-1])+divider+path[-1][:-5]+".py"
+            importlib.import_module(value)
+            os.remove(full_val)
+
+        # for view in views:
+        #     if view.startswith(".\\Shared") or view.startswith("./Shared"):
+        #         continue
+        #     path = view.split("\\")
+        #     divider = "\\"
+        #     if len(path) == 1:
+        #         path = path[0].split("/")
+        #         divider = "/"
+        #     name = path[-1][0:-5]
+        #     #os.chdir(cwd + "/g")
+        #     importlib.import_module(name)
+        #     os.remove(name + ".py")
 
         for controller in controllers:
-            path = controller.split("\\")
-            divider = "\\"
-            if len(path) == 1:
-                path = path[0].split("/")
-                divider = "/"
-            name = path[-1][0:-3]
-            os.chdir(cwd + "/" + divider.join(path[1:-1]))
-            controllerCode = open(path[-1], 'r')
-            data = controllerCode.read()
-            controllerCode.close()
-            os.chdir(cwd)
-            currControllerCode = open(path[-1], 'w')
-            currControllerCode.write(data)
-            currControllerCode.close()
-            importlib.import_module(name)
-            os.remove(path[-1])
+            value = '.'.join(controller.split("\\")[1:])[:-3]
+            importlib.import_module(value)
             
         for task in backgroundtasks.funcs:
             task.main()

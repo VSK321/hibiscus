@@ -9,6 +9,7 @@ import controller
 from AppLoc import *
 import asyncio
 import sys
+import traceback
 
 @app.set_route("/_rose", True)
 class Controller(controller.Controller):
@@ -206,7 +207,7 @@ class Controller(controller.Controller):
             self.conn.close()
             EMCPG.update_probabilities(self.access_paths)
         except Exception as e:
-            print(e)
+            print(traceback.format_exc())
 
 
     async def main(self):

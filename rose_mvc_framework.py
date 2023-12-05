@@ -88,8 +88,8 @@ class MVC(rose_server_framework.HTTP_Server):
         for f in os.listdir(os.getcwd()+'/Shared'):
             if f.endswith('.rose'):
                 #os.chdir(cwd + "/g")
-                self.Critical_View[f[0:-5]] = importlib.import_module(f[0:-5])
-                os.remove(f[0:-5] + ".py")
+                self.Critical_View[f[0:-5]] = importlib.import_module('Shared.'+f[0:-5])
+                os.remove('./Shared/'+f[0:-5] + ".py")
                # os.chdir(cwd)
         #Discover all files within cwd and check for .rose and .py
         views = glob.glob('./**/*.rose', recursive=True)
@@ -117,7 +117,7 @@ class MVC(rose_server_framework.HTTP_Server):
             if len(path) == 1:
                 path = path[0].split("/")
                 divider = "/"
-            rose_compiler.Convert(divider.join(path[0:-1]), path[-1], True)
+            rose_compiler.Convert(divider.join(path[0:-1]), path[-1])
             
         for view in views:
             if view.startswith(".\\Shared") or view.startswith("./Shared"):
@@ -131,19 +131,6 @@ class MVC(rose_server_framework.HTTP_Server):
             full_val = divider.join(path[0:-1])+divider+path[-1][:-5]+".py"
             importlib.import_module(value)
             os.remove(full_val)
-
-        # for view in views:
-        #     if view.startswith(".\\Shared") or view.startswith("./Shared"):
-        #         continue
-        #     path = view.split("\\")
-        #     divider = "\\"
-        #     if len(path) == 1:
-        #         path = path[0].split("/")
-        #         divider = "/"
-        #     name = path[-1][0:-5]
-        #     #os.chdir(cwd + "/g")
-        #     importlib.import_module(name)
-        #     os.remove(name + ".py")
 
         for controller in controllers:
             value = '.'.join(controller.split("\\")[1:])[:-3]

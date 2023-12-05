@@ -41,7 +41,7 @@ def ConvertFile(temp: str) -> str:
         temp = temp + '\n' + x
     return temp
 
-def Convert(path: str, fileName: str, add_path: bool = False) -> None:
+def Convert(path: str, fileName: str) -> None:
     microcontrollerData = ""
     cwd = os.getcwd()
     os.chdir(path)
@@ -63,10 +63,7 @@ def Convert(path: str, fileName: str, add_path: bool = False) -> None:
     #    os.mkdir("g")
     #os.chdir(cwd + "/g")
     #print(microcontrollerData)
-    if add_path:
-        file = open(path+"/"+(fileName[:-5]+".py"), 'w')
-    else:
-        file = open((fileName[:-5]+".py"), 'w')
+    file = open(path+"/"+(fileName[:-5]+".py"), 'w')
     compiledFile = microcontrollerData + '\n    async def main(self, page_change=None):\n        rose_line = ""' + compiledFile + '\n        if page_change != None:    rose_line = super()._pageChange(rose_line, page_change)\n        return rose_line'
     file.write((compiledFile))
     file.close()

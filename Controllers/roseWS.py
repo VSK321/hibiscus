@@ -51,7 +51,7 @@ class Controller(controller.Controller):
                         paths['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "")] = [attr[4:]]
                     #paths['/HTML/BODY/APP' + tree.getpath(el).upper()] = attr[4:]
                 elif attr.startswith("roseid"):
-                    self.path_values['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "")] = el.get(attr)
+                    self.path_values['/HTML/BODY/APP' + tree.getpath(el).upper().replace("[1]", "")] = [el.get(attr)]
                     el.attrib.pop(attr)
         page_view = (tostring(page_view)).decode()
         #print(self.paths)
@@ -88,70 +88,39 @@ class Controller(controller.Controller):
     async def UpdateWebSocketAsync(self, data):
         method = self.paths[data['path'] + '/' + data['event']]
         if data['path'].find('/MAIN') != -1:
-            if data['event'] == "input":
-                #print(data['vars'][data['path']])
-                methods = method.split(".")
-                update = self.page_view
-                for method in range(len(methods)):
-                    if method == len(methods) - 1:
-                        update = getattr(update, methods[method])(data['vars'][data['path']])
-                        continue
-                    if methods[method].endswith("()"):
-                        if self.path_values.get(data['path']) != None:
-                            update = getattr(update, methods[method][:-2])(self.path_values[data['path']])
-                        else:
-                            update = getattr(update, methods[method][:-2])()
-                        continue
-                    update = getattr(update, methods[method])
-            else:
-                methods = method.split(".")
-                update = self.page_view
-                for method in range(len(methods)):
-                    if method == len(methods) - 1:
-                        if self.path_values.get(data['path']) != None:
-                            update = getattr(update, methods[method])(self.path_values[data['path']])
-                        else:
-                            update = getattr(update, methods[method])()
-                        continue
-                    if methods[method].endswith("()"):
-                        if self.path_values.get(data['path']) != None:
-                            update = getattr(update, methods[method][:-2])(self.path_values[data['path']])
-                        else:
-                            update = getattr(update, methods[method][:-2])()
-                        continue
-                    update = getattr(update, methods[method])
+            update = self.page_view
         else:
-            if data['event'] == "input":
-                methods = method.split(".")
-                update = self.app_view
-                for method in range(len(methods)):
-                    if method == len(methods) - 1:
-                        update = getattr(update, methods[method])(data['vars'][data['path']])
-                        continue
-                    if methods[method].endswith("()"):
-                        if self.path_values.get(data['path']) != None:
-                            update = getattr(update, methods[method][:-2])(self.path_values[data['path']])
-                        else:
-                            update = getattr(update, methods[method][:-2])()
-                        continue
-                    update = getattr(update, methods[method])
-            else:
-                methods = method.split(".")
-                update = self.app_view
-                for method in range(len(methods)):
-                    if method == len(methods) - 1:
-                        if self.path_values.get(data['path']) != None:
-                            update = getattr(update, methods[method])(self.path_values[data['path']])
-                        else:
-                            update = getattr(update, methods[method])()
-                        continue
-                    if methods[method].endswith("()"):
-                        if self.path_values.get(data['path']) != None:
-                            update = getattr(update, methods[method][:-2])(self.path_values[data['path']])
-                        else:
-                            update = getattr(update, methods[method][:-2])()
-                        continue
-                    update = getattr(update, methods[method])
+            update = self.app_view
+        if data['event'] == "input":
+            #print(data['vars'][data['path']])
+            methods = method.split(".")
+            for method in range(len(methods)):
+                if method == len(methods) - 1:
+                    update = getattr(update, methods[method])(data['vars'][data['path']])
+                    continue
+                if methods[method].endswith("()"):
+                    if self.path_values.get(data['path']) != None:
+                        update = getattr(update, methods[method][:-2])(self.path_values[data['path']])
+                    else:
+                        update = getattr(update, methods[method][:-2])()
+                    continue
+                update = getattr(update, methods[method])
+        else:
+            methods = method.split(".")
+            for method in range(len(methods)):
+                if method == len(methods) - 1:
+                    if self.path_values.get(data['path']) != None:
+                        update = getattr(update, methods[method])(*self.path_values[data['path']])
+                    else:
+                        update = getattr(update, methods[method])()
+                    continue
+                if methods[method].endswith("()"):
+                    if self.path_values.get(data['path']) != None:
+                        update = getattr(update, methods[method][:-2])(*self.path_values[data['path']])
+                    else:
+                        update = getattr(update, methods[method][:-2])()
+                    continue
+                update = getattr(update, methods[method])
         if update:
             temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
             page_view = fromstring(temp)

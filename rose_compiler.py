@@ -5,10 +5,6 @@ def ConvertSingleLine(line: str) -> str:
     if line.replace('\t', '').replace(' ', '').startswith("~exe~"):
         line = line[(line.find("~exe~")+5):len(line)]        
     else:
-        #if line.find("~(") != -1:
-        #    position = line.find(">")
-        #    if position != -1:
-        #        line = line[:position] + " roseid=\""+ uuid.uuid4().hex +"\"" + line[position:]
         line = line.replace("~(", "' + str(")
         line = line.replace(")~", ") + '")
         line = "rose_line = rose_line + '" + line + "\\n' "

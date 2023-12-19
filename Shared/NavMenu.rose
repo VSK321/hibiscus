@@ -18,6 +18,9 @@
             <li>
                 <a class="nav-link" href="/_r">Redirect Controller</a>
             </li>
+            <!--<li>
+                ~("""await self.counter.main()""")~
+            </li>-->
         </ul>
     </div>
 </nav>

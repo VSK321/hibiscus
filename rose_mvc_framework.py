@@ -17,8 +17,8 @@ import traceback
 
 class MVC(rose_server_framework.HTTP_Server):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, host: str, port: int, backlog: int):
+        super().__init__(host, port, backlog)
         self.Critical_View: dict[str, ModuleType] = {}
 
     async def ViewHandlerAsync(self) -> bytes:
@@ -85,12 +85,7 @@ class MVC(rose_server_framework.HTTP_Server):
         for f in os.listdir(os.getcwd()+'/Shared'):
             if f.endswith('.rose'):
                 rose_compiler.Convert(os.getcwd()+'/Shared', f)
-        for f in os.listdir(os.getcwd()+'/Shared'):
-            if f.endswith('.rose'):
-                #os.chdir(cwd + "/g")
-                self.Critical_View[f[0:-5]] = importlib.import_module('Shared.'+f[0:-5])
-                os.remove('./Shared/'+f[0:-5] + ".py")
-               # os.chdir(cwd)
+        
         #Discover all files within cwd and check for .rose and .py
         views = glob.glob('./**/*.rose', recursive=True)
         controllers = glob.glob('./*/**/*.py', recursive=True)
@@ -118,6 +113,13 @@ class MVC(rose_server_framework.HTTP_Server):
                 path = path[0].split("/")
                 divider = "/"
             rose_compiler.Convert(divider.join(path[0:-1]), path[-1])
+            
+
+        for f in os.listdir(os.getcwd()+'/Shared'):
+            if f.endswith('.rose'):
+                #os.chdir(cwd + "/g")
+                self.Critical_View[f[0:-5]] = importlib.import_module('Shared.'+f[0:-5])
+                os.remove('./Shared/'+f[0:-5] + ".py")
             
         for view in views:
             if view.startswith(".\\Shared") or view.startswith("./Shared"):
@@ -152,15 +154,4 @@ class MVC(rose_server_framework.HTTP_Server):
             #Check to extend funcs list ---------------------------------------------------------------
         print('Build successful.')
 
-#socket.gethostbyname(socket.gethostname())
-#instance = MVC(socket.gethostbyname(socket.gethostname()), 80, 50)
-instance = MVC("192.168.0.24", 80, 50)
-instance.Build()
-#instance.Start_Server()
-try:
-    asyncio.run(instance.run_server())
-except:
-    file = open("./models/EMCPG.txt", 'wb')
-    file.write(pickle.dumps(AppLoc.EMCPG))
-    file.close()
 

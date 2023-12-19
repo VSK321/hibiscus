@@ -80,14 +80,17 @@ def convert_path(path: str):
                 length = split_str[1]
                 p = split_str[0]
             if p == "str":
-                converted_path += "/[a-z]"
+                converted_path += "/[.]"
             elif p == "int":
-                converted_path += "/[0-9]"
+                converted_path += "/[-]?[0-9]"
+            elif p == "float":
+                converted_path += ""
 
 
             if length == "":
+                last_split = converted_path.rfind("/")
                 converted_path += "*"
-                converted_path = converted_path[0:-7] + "[/]?" + converted_path[-6:]
+                converted_path = converted_path[0:last_split] + "[/]?" + converted_path[last_split+1:]
             elif length != "-1":
                 converted_path += "{" + length + "}"
             else:

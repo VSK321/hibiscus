@@ -5,7 +5,7 @@
     <ProjectGuid>5f0f5372-4a11-4ded-ab2f-f7895979b5e7</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>rose_mvc_framework.py</StartupFile>
+    <StartupFile>startup.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -43,6 +43,7 @@
     <Compile Include="Shared\App.rose.py" />
     <Compile Include="Shared\MainLayout.rose.py" />
     <Compile Include="Shared\NavMenu.rose.py" />
+    <Compile Include="startup.py" />
     <Compile Include="view.py" />
     <Compile Include="Views\BedroomLight.rose.py">
       <SubType>Code</SubType>

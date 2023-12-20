@@ -40,28 +40,28 @@
     <Compile Include="rose_server_framework.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Shared\App.rose.py" />
-    <Compile Include="Shared\MainLayout.rose.py" />
-    <Compile Include="Shared\NavMenu.rose.py" />
+    <Compile Include="Shared\App.py" />
+    <Compile Include="Shared\MainLayout.py" />
+    <Compile Include="Shared\NavMenu.py" />
     <Compile Include="startup.py" />
     <Compile Include="view.py" />
-    <Compile Include="Views\BedroomLight.rose.py">
+    <Compile Include="Views\BedroomLight.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\Calculator.rose.py">
+    <Compile Include="Views\Calculator.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\Counter.rose.py" />
-    <Compile Include="Views\first.rose.py" />
-    <Compile Include="Views\fourth.rose.py" />
-    <Compile Include="Views\Hidden.rose.py" />
-    <Compile Include="Views\Home.rose.py" />
-    <Compile Include="Views\Input.rose.py">
+    <Compile Include="Views\Counter.py" />
+    <Compile Include="Views\first.py" />
+    <Compile Include="Views\fourth.py" />
+    <Compile Include="Views\Hidden.py" />
+    <Compile Include="Views\Home.py" />
+    <Compile Include="Views\Input.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\second.rose.py" />
-    <Compile Include="Views\third.rose.py" />
-    <Compile Include="Views\_error.rose.py" />
+    <Compile Include="Views\second.py" />
+    <Compile Include="Views\third.py" />
+    <Compile Include="Views\_error.py" />
     <Compile Include="websocket.py" />
   </ItemGroup>
   <ItemGroup>

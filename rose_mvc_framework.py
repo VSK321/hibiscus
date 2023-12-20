@@ -82,17 +82,19 @@ class MVC(rose_server_framework.HTTP_Server):
     def Build(self) -> None:
         print('Building...')
         cwd = os.getcwd()
-        for f in os.listdir(os.getcwd()+'/Shared'):
-            if f.endswith('.rose'):
-                rose_compiler.Convert(os.getcwd()+'/Shared', f)
+
         
         #Discover all files within cwd and check for .rose and .py
         views = glob.glob('./**/*.rose', recursive=True)
         controllers = glob.glob('./*/**/*.py', recursive=True)
-        controllers = [controller for controller in controllers if not controller.endswith(".rose.py")]
+        controllers = [controller for controller in controllers if not controller[:-2] + "rose" in views]
         os.chdir(cwd + "/root")
         public = glob.glob("./**/*.*", recursive=True)
         os.chdir(cwd)
+        
+        for f in os.listdir(os.getcwd()+'/Shared'):
+            if f.endswith('.rose'):
+                rose_compiler.Convert(os.getcwd()+'/Shared', f)
 
         for obj in public:
             path = obj.split("\\")
@@ -119,7 +121,8 @@ class MVC(rose_server_framework.HTTP_Server):
             if f.endswith('.rose'):
                 #os.chdir(cwd + "/g")
                 self.Critical_View[f[0:-5]] = importlib.import_module('Shared.'+f[0:-5])
-                os.remove('./Shared/'+f[0:-5] + ".py")
+                importlib.import_module('Shared.'+f[0:-5]+"c")
+                os.remove('./Shared/'+f[0:-5] + "c.py")
             
         for view in views:
             if view.startswith(".\\Shared") or view.startswith("./Shared"):
@@ -130,7 +133,8 @@ class MVC(rose_server_framework.HTTP_Server):
                 path = path[0].split("/")
                 divider = "/"
             value = '.'.join(view.split("\\")[1:])[:-5]
-            full_val = divider.join(path[0:-1])+divider+path[-1][:-5]+".py"
+            full_val = divider.join(path[0:-1])+divider+path[-1][:-5]+"c.py"
+            importlib.import_module(full_val[:-3])
             importlib.import_module(value)
             os.remove(full_val)
 

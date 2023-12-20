@@ -1,4 +1,4 @@
-import os #Convert("C:\\Users\\shrik.HOME-PC02\\OneDrive\\Documents\\PythonTests\\Roze", "Test.rose")
+import os
 import uuid
 
 def ConvertSingleLine(line: str) -> str:
@@ -12,7 +12,7 @@ def ConvertSingleLine(line: str) -> str:
 
 def ConvertFile(temp: str) -> str:
     splitTemp = temp.splitlines()
-    num = 2
+    num = 1
     for lineNum in range(len(splitTemp)):
         if splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('~') and splitTemp[lineNum].endswith('{'):
             tempTwo = ""
@@ -46,11 +46,11 @@ def Convert(path: str, fileName: str) -> None:
     file.close()
     compiledFile = ConvertFile(data)
     try:
-        file = open(fileName+'.py', 'r')
+        file = open(fileName[:-5]+'.py', 'r')
         microcontrollerData = file.read()
         file.close()
     except:
-        file = open(fileName+'.py', 'w')
+        file = open(fileName[:-5]+'.py', 'w')
         microcontrollerData = 'import view\nclass Page(view.View):\n    def __init__(self):\n        pass\n'
         file.write(microcontrollerData)
         file.close()
@@ -59,8 +59,8 @@ def Convert(path: str, fileName: str) -> None:
     #    os.mkdir("g")
     #os.chdir(cwd + "/g")
     #print(microcontrollerData)
-    file = open(path+"/"+(fileName[:-5]+".py"), 'w')
-    compiledFile = microcontrollerData + '\n    async def main(self, page_change=None):\n        rose_line = ""' + compiledFile + '\n        if page_change != None:    rose_line = super()._pageChange(rose_line, page_change)\n        return rose_line'
+    file = open(path+"/"+(fileName[:-5]+"c.py"), 'w')
+    compiledFile = 'from AppLoc import *\nfrom '+fileName[:-5]+' import Page\n@partial_implementation(Page)\nasync def main(self, page_change=None):\n    rose_line = ""' + compiledFile + '\n    if page_change != None:    rose_line = super()._pageChange(rose_line, page_change)\n    return rose_line'
     file.write((compiledFile))
     file.close()
     #os.chdir(cwd)

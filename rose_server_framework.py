@@ -37,8 +37,8 @@ class HTTP_Server:
             http_headers, http_data = data.split('\r\n\r\n')
             await self.HTTPRequestManagerAsync(conn, addr, httpheaders.HTTP_Headers(http_headers), http_data)
         except ValueError:
-            sentData = "".encode()
-            await loop.sock_sendall(conn, sentData)
+            response = "".encode()
+            await loop.sock_sendall(conn, response)
             conn.close()
         except Exception as e:
             print(e)

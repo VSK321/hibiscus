@@ -12,13 +12,13 @@ class Controller:
 
     def reroute(self, path):
         sentData = "HTTP/1.1 302 Found\r\n"
-        sentData += httpheaders.HTTP_Headers_Constructor({"Location": path, "Server": "Roze", "X-Frame-Options": "SameOrigin", "Cache-Control": "no-cache", "connection": "close"})
+        sentData += httpheaders.HTTP_Headers_Constructor({"Location": path, "Server": "Rose", "X-Frame-Options": "SameOrigin", "Cache-Control": "no-cache", "connection": "close"})
         self.conn.send(sentData.encode())
         self.conn.close()
 
     def return_data(self, data):
         sentData = "HTTP/1.1 200 OK\r\n"
-        sentData += httpheaders.HTTP_Headers_Constructor({"Server": "Roze", "X-Frame-Options": "SameOrigin", "Cache-Control": "no-cache", "connection": "close"})
+        sentData += httpheaders.HTTP_Headers_Constructor({"Server": "Rose", "X-Frame-Options": "SameOrigin", "Cache-Control": "no-cache", "connection": "close"})
         sentData += data
         self.conn.send(sentData.encode())
         self.conn.close()

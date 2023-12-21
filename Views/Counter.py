@@ -1,6 +1,7 @@
 import view
 from AppLoc import *
 import Views.BedroomLight
+import time
 
 @app.set_route("/counter/{x:int,}")
 class Page(view.View):
@@ -9,15 +10,16 @@ class Page(view.View):
         self.x = x
         self.first = Views.BedroomLight.Page()
 
-    def AddOne(self):
+    async def AddOne(self):
         self.x += 1
+        time.sleep(5)
         return True
 
-    def SubOne(self):
+    async def SubOne(self):
         self.x -= 1
         return True
     
-    def test(self, val=""):
+    async def test(self, val=""):
         self.x += int(val)
         return True
 

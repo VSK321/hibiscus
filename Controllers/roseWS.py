@@ -96,13 +96,13 @@ class Controller(controller.Controller):
             methods = method.split(".")
             for method in range(len(methods)):
                 if method == len(methods) - 1:
-                    update = getattr(update, methods[method])(data['vars'][data['path']])
+                    update = await getattr(update, methods[method])(data['vars'][data['path']])
                     continue
                 if methods[method].endswith("()"):
                     if self.path_values.get(data['path']) != None:
-                        update = getattr(update, methods[method][:-2])(self.path_values[data['path']])
+                        update = await getattr(update, methods[method][:-2])(self.path_values[data['path']])
                     else:
-                        update = getattr(update, methods[method][:-2])()
+                        update = await getattr(update, methods[method][:-2])()
                     continue
                 update = getattr(update, methods[method])
         else:
@@ -110,15 +110,15 @@ class Controller(controller.Controller):
             for method in range(len(methods)):
                 if method == len(methods) - 1:
                     if self.path_values.get(data['path']) != None:
-                        update = getattr(update, methods[method])(*self.path_values[data['path']])
+                        update = await getattr(update, methods[method])(*self.path_values[data['path']])
                     else:
-                        update = getattr(update, methods[method])()
+                        update = await getattr(update, methods[method])()
                     continue
                 if methods[method].endswith("()"):
                     if self.path_values.get(data['path']) != None:
-                        update = getattr(update, methods[method][:-2])(*self.path_values[data['path']])
+                        update = await getattr(update, methods[method][:-2])(*self.path_values[data['path']])
                     else:
-                        update = getattr(update, methods[method][:-2])()
+                        update = await getattr(update, methods[method][:-2])()
                     continue
                 update = getattr(update, methods[method])
         if update:
@@ -144,6 +144,18 @@ class Controller(controller.Controller):
         data = "Current"
         data = websocket.WebSocketDataEncoder(data, 1, 9)
         await loop.sock_sendall(self.conn, data.encode('utf8'))
+        
+    async def Sender(self, data, loop):
+        data = json.loads(data)
+        #print(data)
+        sendData = await self.WebSocketRequestHandlerAsync(data)
+        #print(sendData)
+        if sendData['insert'] == {}:
+            pass
+        else:
+            sendData = json.dumps(sendData).encode()
+            sendData = websocket.WebSocketDataEncoder(sendData, 1, 1)
+            await loop.sock_sendall(self.conn, sendData)
 
     async def WebSocketHandlerAsync(self):
         loop = asyncio.get_event_loop()
@@ -161,16 +173,7 @@ class Controller(controller.Controller):
                     data = websocket.WebSocketDataEncoder(data, 1, 10)
                     await loop.sock_sendall(self.conn, data)
                 else:
-                    data = json.loads(data)
-                    #print(data)
-                    sendData = await self.WebSocketRequestHandlerAsync(data)
-                    #print(sendData)
-                    if sendData['insert'] == {}:
-                        pass
-                    else:
-                        sendData = json.dumps(sendData).encode()
-                        sendData = websocket.WebSocketDataEncoder(sendData, 1, 1)
-                        await loop.sock_sendall(self.conn, sendData)
+                    await self.Sender(data, loop)
                 data = (await loop.sock_recv(self.conn, 4096))
                 data, fin, opcode = websocket.WebSocketDataDecoder(data)
             self.conn.close()

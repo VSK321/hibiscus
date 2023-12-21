@@ -22,25 +22,28 @@ class MVC(rose_server_framework.HTTP_Server):
         self.Critical_View: dict[str, ModuleType] = {}
 
     async def ViewHandlerAsync(self) -> bytes:
-        headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': 'text/html', 'connection': 'close'}
-        sentData = httpheaders.HTTP_Headers_Constructor(headers)
-        sentData = sentData + await self.Critical_View['MainLayout'].Page().main()
-        sentData = sentData.encode()
-        return sentData
+        '''
+        Create
+        '''
+        headers = {'Server': 'Rose', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': 'text/html', 'connection': 'close'}
+        response = httpheaders.HTTP_Headers_Constructor(headers)
+        response = response + await self.Critical_View['MainLayout'].Page().main()
+        response = response.encode()
+        return response
 
     async def ControllerHandlerAsync(self, conn: socket.socket, addr, http_headers: httpheaders.HTTP_Headers, http_data: str, softpath: str, recognised_pattern: str, subs: dict[str, object]) -> None:
         await app.funcs[recognised_pattern]['module'](**{'conn':conn, 'addr':addr, 'http_headers':http_headers, 'http_data':http_data, 'Critical_View':self.Critical_View}).main()
 
     def PublicHandler(self, softpath: str) -> bytes:
-        headers = {'Server': 'Roze', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': mimetypes.guess_type(softpath)[0], 'connection': 'close'}
+        headers = {'Server': 'Rose', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': mimetypes.guess_type(softpath)[0], 'connection': 'close'}
         cwd = os.getcwd()
-        sentData = httpheaders.HTTP_Headers_Constructor(headers)
+        response = httpheaders.HTTP_Headers_Constructor(headers)
         os.chdir(app.funcs[softpath]['hardpath'])
         f = open(app.funcs[softpath]['file'], 'rb')
-        sentData = sentData.encode() + f.read()
+        response = response.encode() + f.read()
         f.close()
         os.chdir(cwd)
-        return sentData
+        return response
 
     async def HTTPRequestManagerAsync(self, conn: socket.socket, addr, http_headers: httpheaders.HTTP_Headers, http_data: str) -> None:
         loop = asyncio.get_event_loop()
@@ -59,24 +62,24 @@ class MVC(rose_server_framework.HTTP_Server):
             else:
                 softpath_Type = app.funcs[found_pattern]['type']
             if softpath_Type == 'view':
-                sentData = "HTTP/1.1 200 OK\r\n"
-                sentData = sentData.encode() + await self.ViewHandlerAsync()
-                await loop.sock_sendall(conn, sentData)
+                response = "HTTP/1.1 200 OK\r\n"
+                response = response.encode() + await self.ViewHandlerAsync()
+                await loop.sock_sendall(conn, response)
                 conn.close()
             elif softpath_Type == 'controller':
                 await self.ControllerHandlerAsync(conn, addr, http_headers, http_data, softpath, found_pattern, subs)
             elif softpath_Type == 'public':
                 if found_pattern != None:
                     raise KeyError
-                sentData = "HTTP/1.1 200 OK\r\n"
-                sentData = sentData.encode() + self.PublicHandler(softpath)
-                await loop.sock_sendall(conn, sentData)
+                response = "HTTP/1.1 200 OK\r\n"
+                response = response.encode() + self.PublicHandler(softpath)
+                await loop.sock_sendall(conn, response)
                 conn.close()
         except KeyError as e:
             print('Page not found: ' + str(e))
-            sentData = "HTTP/1.1 404 Not Found\r\n"
-            sentData = sentData.encode() + await self.ViewHandlerAsync()
-            await loop.sock_sendall(conn, sentData)
+            response = "HTTP/1.1 404 Not Found\r\n"
+            response = response.encode() + await self.ViewHandlerAsync()
+            await loop.sock_sendall(conn, response)
             conn.close()
 
     def Build(self) -> None:

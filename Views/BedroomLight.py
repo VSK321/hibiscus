@@ -9,7 +9,7 @@ class Page(view.View):
     def __init__(self):
         self.calc = Views.Calculator.Page()
 
-    def TurnOn(self):
+    async def TurnOn(self):
         #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
         #sock.connect(('192.168.0.50', 4444))
         #sock.send(b'on')
@@ -17,7 +17,7 @@ class Page(view.View):
         print("On")
         return True
 
-    def TurnOff(self):
+    async def TurnOff(self):
         #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
         #sock.connect(('192.168.0.50', 4444))
         #sock.send(b'off')

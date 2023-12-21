@@ -1,6 +1,7 @@
 import functools
 from ctypes import Union
 import re
+from types import ModuleType
 import uuid
 from threading import Lock
 
@@ -21,8 +22,15 @@ class Logger:
 
 
 def partial_implementation(klass):
-    def wrapper(func):
-        setattr(klass, func.__name__, func)
+    def wrapper(func: ModuleType):
+        names = {}
+        for n in app.funcs:
+            if app.funcs[n]['type'] == 'view':
+                names[(app.funcs[n]['module'])] = n
+        if names:
+            setattr(list(names.keys())[-1], func.__name__, func)
+        else:
+            setattr(klass, func.__name__, func)
         return func
     return wrapper
 
@@ -105,10 +113,10 @@ def convert_path(path: str):
 class App:
     def __init__(self):
         self.paths_to_re: list[tuple[function, str]] = []
-        self.funcs: dict[function, dict[object]] = {}
+        self.funcs: dict[str, dict[str, object]] = {}
 
     def set_route(self, path: str, iscontroller: bool = False, metadata = None):
-        def wrapper(func):
+        def wrapper(func: ModuleType):
             converted_path, subs = convert_path(path.lower())
             compiled_re = re.compile(converted_path)
             self.paths_to_re.append((compiled_re, path.lower(), subs))

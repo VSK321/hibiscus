@@ -21,7 +21,7 @@ def ConvertFile(temp: str) -> str:
             start = splitTemp[lineNum].find('~')
             splitTemp[lineNum] = tempTwo + splitTemp[lineNum][start+1:-1] + ":"
             num = num + 1
-        elif splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('}') and num > 2:
+        elif splitTemp[lineNum].replace('\t', '').replace(' ', '').startswith('}') and num > 1:
             num = num - 1
             tempTwo = ""
             for x in range(num):
@@ -60,7 +60,8 @@ def Convert(path: str, fileName: str) -> None:
     #os.chdir(cwd + "/g")
     #print(microcontrollerData)
     file = open(path+"/"+(fileName[:-5]+"c.py"), 'w')
-    compiledFile = 'from AppLoc import *\nfrom '+fileName[:-5]+' import Page\n@partial_implementation(Page)\nasync def main(self, page_change=None):\n    rose_line = ""' + compiledFile + '\n    if page_change != None:    rose_line = super()._pageChange(rose_line, page_change)\n    return rose_line'
+    linked_mod = path[2:].replace('/', '.').replace('\\', '.')+'.'+fileName[:-5]
+    compiledFile = 'from AppLoc import *\nimport '+linked_mod+'\n@partial_implementation('+linked_mod+'.Page)\nasync def main(self, page_change=None):\n    rose_line = ""' + compiledFile + '\n    if page_change != None:    rose_line = self._pageChange(rose_line, page_change)\n    return rose_line'
     file.write((compiledFile))
     file.close()
     #os.chdir(cwd)

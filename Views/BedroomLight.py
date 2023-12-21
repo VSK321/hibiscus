@@ -1,12 +1,13 @@
 import socket
 import view
 from AppLoc import *
+import Views.Calculator
 
 @app.set_route("/BedroomLight")
 class Page(view.View):
 
     def __init__(self):
-        pass
+        self.calc = Views.Calculator.Page()
 
     def TurnOn(self):
         #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)

@@ -25,7 +25,7 @@ def partial_implementation(klass):
     def wrapper(func: ModuleType):
         names = {}
         for n in app.funcs:
-            if app.funcs[n]['type'] == 'view':
+            if app.funcs[n]['type'] == 'view' and not hasattr(app.funcs[n]['module'], 'main'):
                 names[(app.funcs[n]['module'])] = n
         if names:
             setattr(list(names.keys())[-1], func.__name__, func)

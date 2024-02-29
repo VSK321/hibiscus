@@ -15,3 +15,9 @@
 }
 
 ~(await self.first.main("first"))~
+
+
+<form method="post" action="/test123">
+    <input name="name" class="form-control" />
+    <button type="submit" class="btn btn-primary">Send</button>
+</form>

@@ -31,6 +31,7 @@
     <Compile Include="Controllers\TestController.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Controllers\testend.py" />
     <Compile Include="httpheaders.py" />
     <Compile Include="inner_implement.py" />
     <Compile Include="rose_compiler.py">

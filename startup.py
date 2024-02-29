@@ -6,7 +6,7 @@ instance = MVC(socket.gethostbyname(socket.gethostname()), 80, 50)
 instance.Build()
 #instance.Start_Server()
 try:
-    asyncio.run(instance.run_server())
+    instance.Start_Server()
 except:
     file = open("./models/EMCPG.txt", 'wb')
     file.write(pickle.dumps(AppLoc.EMCPG))

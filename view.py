@@ -11,8 +11,10 @@ class View(object):
         main = main.splitlines()
         new_main = ""
         for line in main:
-            l = re.findall("\srose[a-z]+=\"[a-zA-Z]+\"", line)
+            l = re.findall("\srose[a-z]+=\"[a-zA-Z0-9]+\"", line)
             for v in l:
+                if v.startswith("roseid"):
+                    continue
                 code = v.split("\"")[-2]
                 line = line.replace(code, change+"."+code)
             new_main += line + "\n"

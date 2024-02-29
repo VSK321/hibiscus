@@ -17,8 +17,8 @@ import traceback
 
 class MVC(rose_server_framework.HTTP_Server):
 
-    def __init__(self, host: str, port: int, backlog: int):
-        super().__init__(host, port, backlog)
+    def __init__(self, host: str, port: int, backlog: int = 50, threads: int = 50):
+        super().__init__(host, port, backlog, threads)
         self.Critical_View: dict[str, ModuleType] = {}
 
     async def ViewHandlerAsync(self) -> bytes:
@@ -122,7 +122,6 @@ class MVC(rose_server_framework.HTTP_Server):
 
         for f in os.listdir(os.getcwd()+'/Shared'):
             if f.endswith('.rose'):
-                #os.chdir(cwd + "/g")
                 self.Critical_View[f[0:-5]] = importlib.import_module('Shared.'+f[0:-5])
                 m = 'Shared.'+f[0:-5]+"c"
                 importlib.import_module(m)

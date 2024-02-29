@@ -3,6 +3,9 @@ import socket
 import threading
 import time
 import asyncio
+from queue import Queue
+import queue
+import sys
 
 class HTTP_Server:
     '''
@@ -14,57 +17,75 @@ class HTTP_Server:
     host: hostname to be used to access the server
     port: port number to be used
     backlog: backlog for the tcp connection
+    threads: number of concurrent threads to run
     '''
 
-    def __init__(self, host: str, port: int, backlog: int):
-        self.Host: str = host
-        self.Port: int = port
-        self.Backlog: int = backlog
-        self.Server_Running: bool = False #Used to check if there has been a KeyboardInterrupt
-        self.print_lock: threading.Lock = threading.Lock() #Unused threading lock
-        self.thread_count_lock: threading.Lock = threading.Lock() #Previously used to cap the number of threads that can be spawned
-        self.request_manager_lock: threading.Lock = threading.Lock() #Unused threading lock
+    def __init__(self, host, port, backlog, threads):
+        self.Host = host
+        self.Port = port
+        self.Backlog = backlog
+        self.Create_Threads = threads
+        self.q = Queue()
+        self.Server_Running = False
+        self.print_lock = threading.Lock()
+        self.thread_count_lock = threading.Lock()
+        self.thread_count = 0
 
 
-    async def ConnectionManagerAsync(self, conn: socket.socket, addr) -> None:
-        '''
-        This method receives the socket object and the address of the client which it then uses to get the data 
-        and pass the HTTP request into the HTTP request manager method with the http_headers seperated
-        '''
-        loop = asyncio.get_event_loop()
+    def Connection_Manager(self, conn, addr):
+        data = conn.recv(4096).decode('utf-8', 'ignore')
         try:
-            data = (await loop.sock_recv(conn, 4096)).decode('utf8', 'ignore')
             http_headers, http_data = data.split('\r\n\r\n')
-            await self.HTTPRequestManagerAsync(conn, addr, httpheaders.HTTP_Headers(http_headers), http_data)
+            asyncio.run(self.HTTPRequestManagerAsync(conn, addr, httpheaders.HTTP_Headers(http_headers), http_data))
         except ValueError:
-            response = "".encode()
-            await loop.sock_sendall(conn, response)
-            conn.close()
-        except Exception as e:
-            print(e)
+            sentData = "".encode()
+            conn.send(sentData)
             conn.close()
 
-    async def run_server(self):
+    def AcceptLockThread(self):
         '''
-        Main method to run the server. When invoked the TCP socket is created and begins to listen for connections
+        Windows requires this to run in the background to ensure that KeyboardInterrupts are caught within 5 seconds
+        '''
+        while self.Server_Running:
+            time.sleep(5)
+            if self.Server_Running:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP) as s:
+                    s.connect((self.Host, self.Port))
 
-        There is also an event loop created and the connection manager method is invoked for each connection
-        '''
+    def Thread_Manager(self):
+        while self.q.empty() != True:
+            try:
+                conn, addr = self.q.get(block=False)
+                self.Connection_Manager(conn, addr)
+                self.q.task_done()
+            except queue.Empty:
+                pass
+            #except Exception as e:
+            #    with self.print_lock:
+            #        print(e)
+        with self.thread_count_lock:
+            #print(self.thread_count)
+            self.thread_count = self.thread_count - 1
+
+    def Start_Server(self):
         self.Server_Running = True
+        if sys.platform == "win32":
+            threading.Thread(target = self.AcceptLockThread, daemon = True).start()
         print('Server starting...')
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.bind((self.Host, self.Port))
-        server.listen(self.Backlog)
-        server.setblocking(False)
-        print('Server listening on '+self.Host+":"+str(self.Port))
-        loop = asyncio.get_event_loop()
-
-        try:
-            while self.Server_Running:
-                sock, addr = await loop.sock_accept(server)
-                loop.create_task(self.ConnectionManagerAsync(sock, addr))
-        except:
-            self.Server_Running = False
-    
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP) as sock:
+            sock.bind((self.Host, self.Port))
+            sock.listen(self.Backlog)
+            print('Server listening on '+self.Host+":"+str(self.Port))
+            try:
+                while self.Server_Running:
+                    conn, addr = sock.accept()
+                    self.q.put((conn, addr))
+                    if self.thread_count < self.Create_Threads and self.q.empty() == False:
+                        threading.Thread(target = self.Thread_Manager, daemon = True).start()
+                        with self.thread_count_lock:
+                            self.thread_count = self.thread_count + 1
+                    else:
+                        pass
+            except KeyboardInterrupt:
+                self.Server_Running = False
         print('Server turned off.')
-

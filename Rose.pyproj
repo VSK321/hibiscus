@@ -49,19 +49,12 @@
     <Compile Include="Views\BedroomLight.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\Calculator.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Views\Counter.py" />
-    <Compile Include="Views\first.py" />
-    <Compile Include="Views\fourth.py" />
     <Compile Include="Views\Hidden.py" />
     <Compile Include="Views\Home.py" />
     <Compile Include="Views\Input.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\second.py" />
-    <Compile Include="Views\third.py" />
     <Compile Include="Views\_error.py" />
     <Compile Include="websocket.py" />
   </ItemGroup>
@@ -82,19 +75,12 @@
     <Content Include="Views\BedroomLight.rose">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="Views\Calculator.rose">
-      <SubType>Code</SubType>
-    </Content>
     <Content Include="Views\Counter.rose" />
-    <Content Include="Views\first.rose" />
-    <Content Include="Views\fourth.rose" />
     <Content Include="Views\Hidden.rose" />
     <Content Include="Views\Home.rose" />
     <Content Include="Views\Input.rose">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="Views\second.rose" />
-    <Content Include="Views\third.rose" />
     <Content Include="Views\_error.rose">
       <SubType>Code</SubType>
     </Content>

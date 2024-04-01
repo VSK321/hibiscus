@@ -11,23 +11,27 @@ import asyncio
 import sys
 import traceback
 
+from starlette.websockets import WebSocket
+from starlette.websockets import WebSocketDisconnect
+from starlette.websockets import WebSocketState
+
 @app.set_route("/_rose", True)
 class Controller(controller.Controller):
 
-    def __init__(self, conn, addr, http_headers, http_data, Critical_View):
-        self.conn = conn
-        self.addr = addr
-        self.http_headers = http_headers
-        self.http_data = http_data
+    def __init__(self, send, receive, scope, Critical_View):
+        self.send = send
+        self.receive = receive
+        self.scope = scope
         self.Critical_View = Critical_View
         self.Lock = threading.Lock()
-        self.SoftPath = http_headers.Url
+        self.SoftPath = scope['raw_path'].decode()
         self.paths = {}
         self.path_values: dict = {}
         self.page_view = ""
         self.app_view = ""
         self.original_doc = ""
         self.access_paths: list[tuple[str, str]] = []
+        self.websocket = None
 
     def HTML_Manager(self, page_view, app_view):
         paths = {}
@@ -139,57 +143,26 @@ class Controller(controller.Controller):
         data['vars'] = {}
         return data
 
-    async def WebSocketPing(self):
-        loop = asyncio.get_event_loop()
-        data = "Current"
-        data = websocket.WebSocketDataEncoder(data, 1, 9)
-        await loop.sock_sendall(self.conn, data.encode('utf8'))
-        
-    async def Sender(self, data, loop):
-        data = json.loads(data)
-        #print(data)
-        sendData = await self.WebSocketRequestHandlerAsync(data)
-        #print(sendData)
-        if sendData['insert'] == {}:
-            pass
-        else:
-            sendData = json.dumps(sendData).encode()
-            sendData = websocket.WebSocketDataEncoder(sendData, 1, 1)
-            await loop.sock_sendall(self.conn, sendData)
-
     async def WebSocketHandlerAsync(self):
-        loop = asyncio.get_event_loop()
         try:
-            data = (await loop.sock_recv(self.conn, 4096))
-            data, fin, opcode = websocket.WebSocketDataDecoder(data)
-            while opcode != "1000":
-                temp = data
-                while fin != "1":
-                    data = (await loop.sock_recv(self.conn, 4096))
-                    data, fin, opcode = websocket.WebSocketDataDecoder(data)
-                    temp = temp + data
-                data = temp
-                if opcode == "1001":
-                    data = websocket.WebSocketDataEncoder(data, 1, 10)
-                    await loop.sock_sendall(self.conn, data)
+            while self.websocket.client_state == WebSocketState.CONNECTED:
+                request = await self.websocket.receive_text()
+                request = json.loads(request)
+                sendData = await self.WebSocketRequestHandlerAsync(request)
+                if sendData['insert'] == {}:
+                    pass
                 else:
-                    await self.Sender(data, loop)
-                data = (await loop.sock_recv(self.conn, 4096))
-                data, fin, opcode = websocket.WebSocketDataDecoder(data)
-            self.conn.close()
-            EMCPG.update_probabilities(self.access_paths)
-        except Exception as e:
-            print(traceback.format_exc())
+                    #sendData = json.dumps(sendData).encode()
+                    await self.websocket.send_json(sendData)
+        except WebSocketDisconnect:
+            pass
+        self.websocket.close()
+        EMCPG.update_probabilities(self.access_paths)
 
 
     async def main(self):
-        connectiontype, seckey = websocket.VerifyWebSocketRequest(self.http_headers)
-        if connectiontype:
-            self.app_view = self.Critical_View['App'].Page()
-            websocket.AcceptWebSocketRequest(self.conn, seckey)
-            #self.t = threading.Thread(target = self.WebSocketHandler, daemon = True)
-            #self.t.start()
-            #self.t.join()
-            await self.WebSocketHandlerAsync()
-        else:
-            self.conn.close()
+        self.websocket = WebSocket(scope=self.scope, receive=self.receive, send=self.send)
+        self.app_view = self.Critical_View['App'].Page()
+        await self.websocket.accept()
+        await self.WebSocketHandlerAsync()
+        

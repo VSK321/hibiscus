@@ -3,22 +3,18 @@ import uuid
 
 class Controller:
 
-    def __init__(self, conn, addr, http_headers, http_data, Critical_View):
-        self.conn = conn
-        self.addr = addr
-        self.http_headers = http_headers
-        self.http_data = http_data
+    def __init__(self, send, receive, scope, Critical_View):
+        self.send = send
+        self.receive = receive
+        self.scope = scope
         self.Critical_View = Critical_View
 
-    def reroute(self, path):
-        sentData = "HTTP/1.1 302 Found\r\n"
-        sentData += httpheaders.HTTP_Headers_Constructor({"Location": path, "Server": "Rose", "X-Frame-Options": "SameOrigin", "Cache-Control": "no-cache", "connection": "close"})
-        self.conn.send(sentData.encode())
-        self.conn.close()
+    async def reroute(self, path):
+        headers = httpheaders.HTTP_Headers_Uvicorn_Constructor({"Location": path, "Server": "Rose", "X-Frame-Options": "SameOrigin", "Cache-Control": "no-cache", "connection": "close"})
+        await self.send({"type": "http.response.start", "status": 302, "headers": headers})
+        await self.send({"type": "http.response.body", "body": b''})
 
-    def return_data(self, data):
-        sentData = "HTTP/1.1 200 OK\r\n"
-        sentData += httpheaders.HTTP_Headers_Constructor({"Server": "Rose", "X-Frame-Options": "SameOrigin", "Cache-Control": "no-cache", "connection": "close"})
-        sentData += data
-        self.conn.send(sentData.encode())
-        self.conn.close()
+    async def return_data(self, data):
+        headers = httpheaders.HTTP_Headers_Uvicorn_Constructor({"Server": "Rose", "X-Frame-Options": "SameOrigin", "Cache-Control": "no-cache", "connection": "close"})
+        await self.send({"type": "http.response.start", "status": 200, "headers": headers})
+        await self.send({"type": "http.response.body", "body": data.encode()})

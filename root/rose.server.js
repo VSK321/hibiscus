@@ -49,7 +49,7 @@ function Init() {
 }
 
 var message; var elements; var socket;
-socket = new WebSocket(("ws://" + window.location.hostname + "/_rose"));
+socket = new WebSocket(("ws://" + window.location.hostname + ":" + window.location.port + "/_rose"));
 socket.onmessage = function (event) {
     message = JSON.parse(event.data);
     const keys = Object.keys(message['insert']);

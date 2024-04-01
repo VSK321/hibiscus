@@ -15,39 +15,41 @@ import sys
 import pickle
 import traceback
 
-class MVC(rose_server_framework.HTTP_Server):
+class MVC():
 
-    def __init__(self, host: str, port: int, backlog: int = 50, threads: int = 50):
-        super().__init__(host, port, backlog, threads)
+    def __init__(self):
+        #super().__init__(host, port, backlog, threads)
         self.Critical_View: dict[str, ModuleType] = {}
 
-    async def ViewHandlerAsync(self) -> bytes:
+    async def ViewHandlerAsync(self, path=None) -> tuple[str, bytes]:
         '''
         Create
         '''
         headers = {'Server': 'Rose', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': 'text/html', 'connection': 'close'}
-        response = httpheaders.HTTP_Headers_Constructor(headers)
-        response = response + await self.Critical_View['MainLayout'].Page().main()
+        headers = httpheaders.HTTP_Headers_Uvicorn_Constructor(headers)
+        response = await self.Critical_View['MainLayout'].Page().main()
         response = response.encode()
-        return response
+        return (headers, response)
 
-    async def ControllerHandlerAsync(self, conn: socket.socket, addr, http_headers: httpheaders.HTTP_Headers, http_data: str, softpath: str, recognised_pattern: str, subs: dict[str, object]) -> None:
-        await app.funcs[recognised_pattern]['module'](**{'conn':conn, 'addr':addr, 'http_headers':http_headers, 'http_data':http_data, 'Critical_View':self.Critical_View}).main()
+    async def ControllerHandlerAsync(self, send, receive, scope, softpath: str, recognised_pattern: str, subs: dict[str, object]) -> None:
+        await app.funcs[recognised_pattern]['module'](**{'send':send, 'receive':receive, 'scope':scope, 'Critical_View':self.Critical_View}).main()
 
-    def PublicHandler(self, softpath: str) -> bytes:
+    def PublicHandler(self, softpath: str) -> tuple[str, bytes]:
         headers = {'Server': 'Rose', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': mimetypes.guess_type(softpath)[0], 'connection': 'close'}
         cwd = os.getcwd()
-        response = httpheaders.HTTP_Headers_Constructor(headers)
+        headers = httpheaders.HTTP_Headers_Uvicorn_Constructor(headers)
         os.chdir(app.funcs[softpath]['hardpath'])
         f = open(app.funcs[softpath]['file'], 'rb')
-        response = response.encode() + f.read()
+        response = f.read()
         f.close()
         os.chdir(cwd)
-        return response
+        return (headers, response)
 
-    async def HTTPRequestManagerAsync(self, conn: socket.socket, addr, http_headers: httpheaders.HTTP_Headers, http_data: str) -> None:
-        loop = asyncio.get_event_loop()
-        softpath = http_headers.Url###Check if softpath exists
+    async def HTTPRequestManagerAsync(self, send, receive, scope) -> None:
+        if 'path' in scope:
+            softpath = scope['path']###Check if softpath exists
+        else:
+            return None
         try:
             #Match softpath pattern
             found_pattern = None
@@ -62,25 +64,22 @@ class MVC(rose_server_framework.HTTP_Server):
             else:
                 softpath_Type = app.funcs[found_pattern]['type']
             if softpath_Type == 'view':
-                response = "HTTP/1.1 200 OK\r\n"
-                response = response.encode() + await self.ViewHandlerAsync()
-                await loop.sock_sendall(conn, response)
-                conn.close()
+                (headers, response) = await self.ViewHandlerAsync()
+                await send({"type": "http.response.start", "status": 200, "headers": headers})
+                await send({"type": "http.response.body", "body": response})
             elif softpath_Type == 'controller':
-                await self.ControllerHandlerAsync(conn, addr, http_headers, http_data, softpath, found_pattern, subs)
+                await self.ControllerHandlerAsync(send, receive, scope, softpath, found_pattern, subs)
             elif softpath_Type == 'public':
                 if found_pattern != None:
                     raise KeyError
-                response = "HTTP/1.1 200 OK\r\n"
-                response = response.encode() + self.PublicHandler(softpath)
-                await loop.sock_sendall(conn, response)
-                conn.close()
+                (headers, response) = self.PublicHandler(softpath)
+                await send({"type": "http.response.start", "status": 200, "headers": headers})
+                await send({"type": "http.response.body", "body": response})
         except KeyError as e:
             print('Page not found: ' + str(e))
-            response = "HTTP/1.1 404 Not Found\r\n"
-            response = response.encode() + await self.ViewHandlerAsync()
-            await loop.sock_sendall(conn, response)
-            conn.close()
+            (headers, response) = await self.ViewHandlerAsync()
+            await send({"type": "http.response.start", "status": 404, "headers": headers})
+            await send({"type": "http.response.body", "body": response})
 
     def Build(self) -> None:
         print('Building...')

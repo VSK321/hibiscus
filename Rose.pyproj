@@ -5,13 +5,23 @@
     <ProjectGuid>5f0f5372-4a11-4ded-ab2f-f7895979b5e7</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>startup.py</StartupFile>
+    <StartupFile>manage.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Rose</Name>
     <RootNamespace>Roze</RootNamespace>
+    <LaunchProvider>Web launcher</LaunchProvider>
+    <WebBrowserUrl>http://127.0.0.1</WebBrowserUrl>
+    <WebBrowserPort>8080</WebBrowserPort>
+    <PythonRunWebServerCommandArguments>runserver</PythonRunWebServerCommandArguments>
+    <PythonDebugWebServerCommandArguments>runserver</PythonDebugWebServerCommandArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <PythonRunWebServerCommand>
+    </PythonRunWebServerCommand>
+    <PythonDebugWebServerCommand>
+    </PythonDebugWebServerCommand>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -34,6 +44,7 @@
     <Compile Include="Controllers\testend.py" />
     <Compile Include="httpheaders.py" />
     <Compile Include="inner_implement.py" />
+    <Compile Include="manage.py" />
     <Compile Include="rose_compiler.py">
       <SubType>Code</SubType>
     </Compile>
@@ -41,6 +52,7 @@
     <Compile Include="rose_server_framework.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="server.py" />
     <Compile Include="Shared\App.py" />
     <Compile Include="Shared\MainLayout.py" />
     <Compile Include="Shared\NavMenu.py" />

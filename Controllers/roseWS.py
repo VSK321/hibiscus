@@ -1,13 +1,13 @@
-import websocket
+from collections import deque
+from enum import Enum
 import json
 import threading
 from lxml import etree
-from lxml.html import fromstring, tostring
+from lxml.html import HtmlElement, fromstring, tostring
 from lxml.html.diff import htmldiff, html_annotate
 import difflib
 import controller
 from AppLoc import *
-import asyncio
 import sys
 import traceback
 
@@ -15,7 +15,12 @@ from starlette.websockets import WebSocket
 from starlette.websockets import WebSocketDisconnect
 from starlette.websockets import WebSocketState
 
-@app.set_route("/_rose", True)
+class Change_Status(Enum):
+    Added = 1
+    Removed = 2
+    Updated = 3
+
+@app.set_route("/_rose")
 class Controller(controller.Controller):
 
     def __init__(self, send, receive, scope, Critical_View):
@@ -24,7 +29,7 @@ class Controller(controller.Controller):
         self.scope = scope
         self.Critical_View = Critical_View
         self.Lock = threading.Lock()
-        self.SoftPath = scope['raw_path'].decode()
+        self.SoftPath = scope['path']
         self.paths = {}
         self.path_values: dict = {}
         self.page_view = ""
@@ -32,6 +37,58 @@ class Controller(controller.Controller):
         self.original_doc = ""
         self.access_paths: list[tuple[str, str]] = []
         self.websocket = None
+        
+    def find_changes(self, old_page: str, new_page: str) -> list[tuple[str, Change_Status]]:
+        old_tree = fromstring(old_page)
+        new_tree = fromstring(new_page)
+
+        def compare_elements(old_element: HtmlElement, new_element: HtmlElement, root: etree.ElementTree, old_root: etree.ElementTree) -> list[tuple[str, Change_Status]]:
+
+            changed_elements = []
+            
+            if tostring(old_element) == tostring(new_element):
+                return changed_elements
+
+            if old_element.tag != new_element.tag:
+                changed_elements.append((root.getpath(new_element), Change_Status.Updated))
+                
+            elif len(old_element.getchildren()) == 0 and len(new_element.getchildren()) == 0:
+                            old_text = old_element.text_content().strip()
+                            new_text = new_element.text_content().strip()
+                            if old_text != new_text:
+                                changed_elements.append((root.getpath(new_element), Change_Status.Updated))
+
+            else:
+                old_attrs = dict(old_element.attrib)
+                new_attrs = dict(new_element.attrib)
+                added_attrs = set(new_attrs) - set(old_attrs)
+                removed_attrs = set(old_attrs) - set(new_attrs)
+                changed_attrs = {(attr, old_attrs[attr], new_attrs[attr]) for attr in set(old_attrs) & set(new_attrs) if old_attrs[attr] != new_attrs[attr]}
+
+                if added_attrs or removed_attrs or changed_attrs:
+                    changed_elements.append((root.getpath(new_element), Change_Status.Updated))
+                else:
+                    old_element_xpaths = set([old_root.getpath(x) for x in old_element.getchildren()])
+                    new_element_xpaths = set([root.getpath(x) for x in new_element.getchildren()])
+                    added_elements = new_element_xpaths - old_element_xpaths
+                    deleted_elements = old_element_xpaths - new_element_xpaths
+                    
+                    all_xpaths = old_element_xpaths.union(new_element_xpaths)
+                    
+                    possible_updated_elements = all_xpaths - added_elements - deleted_elements
+                    
+                    changed_elements += [(x, Change_Status.Added) for x in added_elements]
+                    changed_elements += [(x, Change_Status.Removed) for x in deleted_elements]
+
+                    for xpath in possible_updated_elements:
+                        old_elem = old_root.xpath(xpath)[0]
+                        new_elem = root.xpath(xpath)[0]
+                        sub_changes = compare_elements(old_elem, new_elem, root, old_root)
+                        changed_elements += sub_changes
+
+            return changed_elements
+
+        return compare_elements(old_tree, new_tree, etree.ElementTree(new_tree), etree.ElementTree(old_tree))
 
     def HTML_Manager(self, page_view, app_view):
         paths = {}
@@ -84,12 +141,13 @@ class Controller(controller.Controller):
             #self.page_view = app.funcs[data['softpath'].lower()]['module']()
         except:
             self.page_view = app.funcs['/_error']['module']()
-        temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
-        self.original_doc = temp
-        data['insert'] = {"/HTML/BODY/APP": temp}
+        page, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
+        self.original_doc = page
+        data['insert'] = {"/HTML/BODY/APP": page}
         return data
 
     async def UpdateWebSocketAsync(self, data):
+        data['insert'] = {}
         method = self.paths[data['path'] + '/' + data['event']]
         if data['path'].find('/MAIN') != -1:
             update = self.page_view
@@ -126,20 +184,16 @@ class Controller(controller.Controller):
                     continue
                 update = getattr(update, methods[method])
         if update:
-            temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
-            page_view = fromstring(temp)
-            tree = etree.ElementTree(page_view)
-            #for i,s in enumerate(difflib.ndiff(self.original_doc, temp)):
-            #    if s[0] == " ": continue
-            #    elif s[0] == "-":
-            #        print(u'Delete "{}" from position {}'.format(s[-1], i))
-            #    elif s[0] == "+":
-            #        print(u'Add "{}" from position {}'.format(s[-1], i))
-            diff = htmldiff(self.original_doc, temp)
-            #print(diff)
-            diff_view = fromstring(diff)
-            self.original_doc = temp
-            data['insert'] = {"/HTML/BODY/APP": temp}
+            page, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
+            curr_page = fromstring(page)
+            changes = self.find_changes(self.original_doc, page)
+            for change, change_type in changes:
+                root_removed = '/'.join(change.split('/')[2:])
+                if change_type == Change_Status.Removed:
+                    data['insert']["/HTML/BODY/APP"+change] = ''
+                    continue
+                data['insert']["/HTML/BODY/APP"+change] = tostring(curr_page.xpath(root_removed)[0]).decode()
+            self.original_doc = page
         data['vars'] = {}
         return data
 
@@ -149,14 +203,10 @@ class Controller(controller.Controller):
                 request = await self.websocket.receive_text()
                 request = json.loads(request)
                 sendData = await self.WebSocketRequestHandlerAsync(request)
-                if sendData['insert'] == {}:
-                    pass
-                else:
-                    #sendData = json.dumps(sendData).encode()
-                    await self.websocket.send_json(sendData)
+                await self.websocket.send_json(sendData)
         except WebSocketDisconnect:
             pass
-        self.websocket.close()
+        #await self.websocket.close()
         EMCPG.update_probabilities(self.access_paths)
 
 

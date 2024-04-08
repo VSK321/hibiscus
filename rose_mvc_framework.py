@@ -1,29 +1,25 @@
 from builtins import KeyError
 from types import ModuleType
-import rose_server_framework
-import rose_compiler
 import importlib
-import httpheaders
 import mimetypes
 import os
 import glob
-from AppLoc import *
-import AppLoc
-import asyncio
-import socket
 import sys
 import pickle
-import traceback
+
+from AppLoc import *
+import rose_compiler
+import httpheaders
 
 class MVC():
 
     def __init__(self):
         #super().__init__(host, port, backlog, threads)
         self.Critical_View: dict[str, ModuleType] = {}
-
+        
     async def ViewHandlerAsync(self, path=None) -> tuple[str, bytes]:
         '''
-        Create
+        !TODO: Update to include paths using a new list called mvc_views OR update controllers to return mvc_views (add compiler for it)
         '''
         headers = {'Server': 'Rose', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': 'text/html', 'connection': 'close'}
         headers = httpheaders.HTTP_Headers_Uvicorn_Constructor(headers)
@@ -35,6 +31,9 @@ class MVC():
         await app.funcs[recognised_pattern]['module'](**{'send':send, 'receive':receive, 'scope':scope, 'Critical_View':self.Critical_View}).main()
 
     def PublicHandler(self, softpath: str) -> tuple[str, bytes]:
+        '''
+        !TODO: Error handling for chdir
+        '''
         headers = {'Server': 'Rose', 'X-Frame-Options': 'SameOrigin', 'Cache-Control': 'no-cache', 'Content-Type': mimetypes.guess_type(softpath)[0], 'connection': 'close'}
         cwd = os.getcwd()
         headers = httpheaders.HTTP_Headers_Uvicorn_Constructor(headers)
@@ -64,7 +63,7 @@ class MVC():
             else:
                 softpath_Type = app.funcs[found_pattern]['type']
             if softpath_Type == 'view':
-                (headers, response) = await self.ViewHandlerAsync()
+                (headers, response) = await self.ViewHandlerAsync(softpath)
                 await send({"type": "http.response.start", "status": 200, "headers": headers})
                 await send({"type": "http.response.body", "body": response})
             elif softpath_Type == 'controller':
@@ -111,6 +110,9 @@ class MVC():
         for view in views:
             if view.startswith(".\\Shared") or view.startswith("./Shared"):
                 continue
+            with open(view, 'r') as f:
+                if f.read().startswith("#ignore\n"):
+                    continue
             path = view.split("\\")
             divider = "\\"
             if len(path) == 1:
@@ -129,6 +131,9 @@ class MVC():
         for view in views:
             if view.startswith(".\\Shared") or view.startswith("./Shared"):
                 continue
+            with open(view, 'r') as f:
+                if f.read().startswith("#ignore\n"):
+                    continue
             path = view.split("\\")
             divider = "\\"
             if len(path) == 1:
@@ -142,6 +147,9 @@ class MVC():
             os.remove(full_val)
 
         for controller in controllers:
+            with open(controller, 'r') as f:
+                if f.read().startswith("#ignore\n"):
+                    continue
             value = '.'.join(controller.split("\\")[1:])[:-3]
             importlib.import_module(value)
             
@@ -152,12 +160,12 @@ class MVC():
         os.chdir(cwd)
         try:
             file = open("./models/EMCPG.txt", 'rb')
-            AppLoc.EMCPG = pickle.loads(file.read())
+            EMCPG = pickle.loads(file.read())
             file.close()
         except:
             file = open("./models/EMCPG.txt", 'w')
             file.close()
-            AppLoc.EMCPG.fill_funcs_matrix(list(app.funcs.keys()))
+            EMCPG.fill_funcs_matrix(list(app.funcs.keys()))
             #Check to extend funcs list ---------------------------------------------------------------
         print('Build successful.')
 

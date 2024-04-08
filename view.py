@@ -16,6 +16,6 @@ class View(object):
                 if v.startswith("roseid"):
                     continue
                 code = v.split("\"")[-2]
-                line = line.replace(code, change+"."+code)
+                line = line.replace(code, change+"."+code, 1)
             new_main += line + "\n"
         return new_main

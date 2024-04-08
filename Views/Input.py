@@ -9,6 +9,7 @@ class Page(view.View):
 
     async def InputVal(self, val=""):
         self.val = val
+        return True
 
     async def ReturnTrue(self):
         return True

@@ -11,7 +11,9 @@
     ~if self.x == 5{
         <p>Counter is at 5</p>
     }
+<p>
     ~exe~rose_line += (lambda: "Counter is, currently, at 1" if self.x == 1 else "")()
+</p>
 }
 
 ~(await self.first.main("first"))~

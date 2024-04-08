@@ -18,6 +18,12 @@
             <li>
                 <a class="nav-link" href="/_r">Redirect Controller</a>
             </li>
+            <li>
+                ~(self.num)~
+            </li>
+            <li>
+                <button class="btn" roseclick="Add">Add Counter</button>
+            </li>
         </ul>
     </div>
 </nav>

@@ -54,7 +54,12 @@ socket.onmessage = function (event) {
     message = JSON.parse(event.data);
     const keys = Object.keys(message['insert']);
     for (x = 0; x < keys.length; x++) {
-        document.evaluate(keys[x], document).iterateNext().innerHTML = message['insert'][keys[x]];
+        try {
+            document.evaluate(keys[x], document).iterateNext().innerHTML = message['insert'][keys[x]];
+        }
+        catch {
+
+        }
     }
     const keysPaths = Object.keys(message['paths']);
     for (x = 0; x < keysPaths.length; x++) {

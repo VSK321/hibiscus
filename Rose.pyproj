@@ -14,9 +14,9 @@
     <RootNamespace>Roze</RootNamespace>
     <LaunchProvider>Web launcher</LaunchProvider>
     <WebBrowserUrl>http://127.0.0.1</WebBrowserUrl>
-    <WebBrowserPort>8080</WebBrowserPort>
-    <PythonRunWebServerCommandArguments>runserver</PythonRunWebServerCommandArguments>
-    <PythonDebugWebServerCommandArguments>runserver</PythonDebugWebServerCommandArguments>
+    <WebBrowserPort>80</WebBrowserPort>
+    <PythonRunWebServerCommandArguments>runserver %SERVER_PORT%</PythonRunWebServerCommandArguments>
+    <PythonDebugWebServerCommandArguments>runserver %SERVER_PORT%</PythonDebugWebServerCommandArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <PythonRunWebServerCommand>
     </PythonRunWebServerCommand>
@@ -33,6 +33,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AppLoc.py" />
+    <Compile Include="command.py" />
+    <Compile Include="commands\create_db.py" />
     <Compile Include="controller.py">
       <SubType>Code</SubType>
     </Compile>
@@ -42,6 +44,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controllers\testend.py" />
+    <Compile Include="DB\Models\basemodel.py" />
+    <Compile Include="DB\Models\post.py" />
+    <Compile Include="DB\Models\user.py" />
     <Compile Include="httpheaders.py" />
     <Compile Include="inner_implement.py" />
     <Compile Include="manage.py" />
@@ -55,7 +60,7 @@
     <Compile Include="server.py" />
     <Compile Include="Shared\App.py" />
     <Compile Include="Shared\MainLayout.py" />
-    <Compile Include="Shared\NavMenu.py" />
+    <Compile Include="Views\NavMenu.py" />
     <Compile Include="startup.py" />
     <Compile Include="view.py" />
     <Compile Include="Views\BedroomLight.py">
@@ -72,17 +77,23 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="DB\Models\" />
+    <Folder Include="DB\Methods\" />
     <Folder Include="Models\" />
+    <Folder Include="DB\" />
+    <Folder Include="commands\" />
     <Folder Include="root\" />
     <Folder Include="Shared\" />
     <Folder Include="Views\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="appsettings.json" />
+    <Content Include="dev_appsettings.json" />
+    <Content Include="requirements.txt" />
     <Content Include="root\favicon.ico" />
     <Content Include="Shared\App.rose" />
     <Content Include="Shared\MainLayout.rose" />
-    <Content Include="Shared\NavMenu.rose" />
+    <Content Include="Views\NavMenu.rose" />
     <Content Include="root\rose.server.js" />
     <Content Include="Views\BedroomLight.rose">
       <SubType>Code</SubType>

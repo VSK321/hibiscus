@@ -64,18 +64,23 @@ socket.onmessage = function (event) {
             else {
                 for (y = 0; y < message['insert'][keys[x]][0].length; y++) {
                     var wrapper = document.createElement('div');
-                    wrapper.innerHTML = message['insert'][keys[x]][0][y];
+                    wrapper.innerHTML = message['insert'][keys[x]][0][y][0];
                     var elem = wrapper.firstChild;
-                    if (elem.innerHTML != message['insert'][keys[x]][0][y]) {
+                    if (elem.innerHTML != message['insert'][keys[x]][0][y][0]) {
                         var wrapper = document.createElement('tbody');
-                        wrapper.innerHTML = message['insert'][keys[x]][0][y];
+                        wrapper.innerHTML = message['insert'][keys[x]][0][y][0];
                         var elem = wrapper.firstChild;
                     }
-                    document.evaluate(keys[x], document).iterateNext().appendChild(elem);
+                    //Previous Element XPath
+                    if (!message['insert'][keys[x]][0][y][1]) {
+                        document.evaluate(keys[x], document).iterateNext().appendChild(elem);
+                    }
+                    //Next Element XPath
+                    else {
+                        var next_elem = document.evaluate(message['insert'][keys[x]][0][y][1], document).iterateNext();
+                        document.evaluate(keys[x], document).iterateNext().insertBefore(elem, next_elem);
+                    }
                 }
-                //var parser = new DOMParser();
-                //var doc = parser.parseFromString(message['insert'][keys[x]][0], 'text/html');
-                //var elem = doc.body.firstChild;
             }
         }
         catch (e) {

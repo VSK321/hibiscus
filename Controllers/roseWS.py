@@ -21,7 +21,7 @@ class Change_Status(Enum):
     Updated = 2
 
 @app.set_route("/_rose")
-class Controller(controller.Controller):
+class Controller:
 
     def __init__(self, send, receive, scope, Critical_View):
         self.send = send
@@ -202,16 +202,22 @@ class Controller(controller.Controller):
         if update:
             page, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
             curr_page = fromstring(page)
+            curr_tree = etree.ElementTree(curr_page)
             changes = self.find_changes(self.original_doc, page)
+            changes = sorted(changes, key=lambda x: x[1].value)
             for change, change_type in changes:
                 root_removed = '/'.join(change.split('/')[2:])
                 if change_type == Change_Status.Removed:
-                    data['insert']["/HTML/BODY/APP"+change] = ['', 0]
+                    data['insert']["/HTML/BODY/APP"+change] = ['', Change_Status.Removed.value]
                 elif change_type == Change_Status.Added:
+                    p: HtmlElement = curr_page.xpath(root_removed)[0]
+                    next_elem = p.getnext()
+                    if next_elem != None:
+                        next_elem = "/HTML/BODY/APP" + curr_tree.getpath(next_elem)
                     if '/HTML/BODY/APP'+'/'.join(change.split('/')[:-1]) in data['insert']:
-                        data['insert']['/HTML/BODY/APP'+'/'.join(change.split('/')[:-1])][0].append(tostring(curr_page.xpath(root_removed)[0]).decode())
+                        data['insert']['/HTML/BODY/APP'+'/'.join(change.split('/')[:-1])][0].append((tostring(p).decode(), next_elem))
                     else:
-                        data['insert']['/HTML/BODY/APP'+'/'.join(change.split('/')[:-1])] = [[tostring(curr_page.xpath(root_removed)[0]).decode()], change_type.value]
+                        data['insert']['/HTML/BODY/APP'+'/'.join(change.split('/')[:-1])] = [[(tostring(p).decode(), next_elem)], change_type.value]
                 else:
                     data['insert']["/HTML/BODY/APP"+change] = [tostring(curr_page.xpath(root_removed)[0]).decode(), change_type.value]
             self.original_doc = page

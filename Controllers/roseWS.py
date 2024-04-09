@@ -16,9 +16,9 @@ from starlette.websockets import WebSocketDisconnect
 from starlette.websockets import WebSocketState
 
 class Change_Status(Enum):
+    Removed = 0
     Added = 1
-    Removed = 2
-    Updated = 3
+    Updated = 2
 
 @app.set_route("/_rose")
 class Controller(controller.Controller):
@@ -37,6 +37,13 @@ class Controller(controller.Controller):
         self.original_doc = ""
         self.access_paths: list[tuple[str, str]] = []
         self.websocket = None
+        
+    def remove_optional_end(self, value: str):
+        value = value.split('/')
+        for v in range(len(value)):
+            if value[v].endswith('[1]'):
+                value[v] = value[v][:-3]
+        return '/'.join(value)
         
     def find_changes(self, old_page: str, new_page: str) -> list[tuple[str, Change_Status]]:
         old_tree = fromstring(old_page)
@@ -68,8 +75,10 @@ class Controller(controller.Controller):
                 if added_attrs or removed_attrs or changed_attrs:
                     changed_elements.append((root.getpath(new_element), Change_Status.Updated))
                 else:
-                    old_element_xpaths = set([old_root.getpath(x) for x in old_element.getchildren()])
-                    new_element_xpaths = set([root.getpath(x) for x in new_element.getchildren()])
+                    ordered_old_element_xpaths = [self.remove_optional_end(old_root.getpath(x)) for x in old_element.getchildren()]
+                    old_element_xpaths = set(ordered_old_element_xpaths)
+                    ordered_new_element_xpaths = [self.remove_optional_end(root.getpath(x)) for x in new_element.getchildren()]
+                    new_element_xpaths = set(ordered_new_element_xpaths)
                     added_elements = new_element_xpaths - old_element_xpaths
                     deleted_elements = old_element_xpaths - new_element_xpaths
                     
@@ -77,8 +86,15 @@ class Controller(controller.Controller):
                     
                     possible_updated_elements = all_xpaths - added_elements - deleted_elements
                     
-                    changed_elements += [(x, Change_Status.Added) for x in added_elements]
                     changed_elements += [(x, Change_Status.Removed) for x in deleted_elements]
+                    
+                    added_dict = dict.fromkeys(ordered_new_element_xpaths)
+                    for value in added_elements:
+                        added_dict[value] = 1
+                        
+                    for key in added_dict:
+                        if added_dict[key] == 1:
+                            changed_elements.append((key, Change_Status.Added))
 
                     for xpath in possible_updated_elements:
                         old_elem = old_root.xpath(xpath)[0]
@@ -143,7 +159,7 @@ class Controller(controller.Controller):
             self.page_view = app.funcs['/_error']['module']()
         page, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
         self.original_doc = page
-        data['insert'] = {"/HTML/BODY/APP": page}
+        data['insert'] = {"/HTML/BODY/APP": [page, Change_Status.Updated.value]}
         return data
 
     async def UpdateWebSocketAsync(self, data):
@@ -190,10 +206,16 @@ class Controller(controller.Controller):
             for change, change_type in changes:
                 root_removed = '/'.join(change.split('/')[2:])
                 if change_type == Change_Status.Removed:
-                    data['insert']["/HTML/BODY/APP"+change] = ''
-                    continue
-                data['insert']["/HTML/BODY/APP"+change] = tostring(curr_page.xpath(root_removed)[0]).decode()
+                    data['insert']["/HTML/BODY/APP"+change] = ['', 0]
+                elif change_type == Change_Status.Added:
+                    if '/HTML/BODY/APP'+'/'.join(change.split('/')[:-1]) in data['insert']:
+                        data['insert']['/HTML/BODY/APP'+'/'.join(change.split('/')[:-1])][0].append(tostring(curr_page.xpath(root_removed)[0]).decode())
+                    else:
+                        data['insert']['/HTML/BODY/APP'+'/'.join(change.split('/')[:-1])] = [[tostring(curr_page.xpath(root_removed)[0]).decode()], change_type.value]
+                else:
+                    data['insert']["/HTML/BODY/APP"+change] = [tostring(curr_page.xpath(root_removed)[0]).decode(), change_type.value]
             self.original_doc = page
+        #data['insert'] = {"/HTML/BODY/APP": page}
         data['vars'] = {}
         return data
 

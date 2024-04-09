@@ -3,13 +3,34 @@
 <button class="btn btn-primary" roseclick="SubOne">Subtract</button>
 <button class="btn btn-primary" roseclick="test" roseid="~(self.x)~">Add Counter Value</button>
 
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">First</th>
+            <th scope="col">Last</th>
+            <th scope="col">Handle</th>
+        </tr>
+    </thead>
+    <tbody>
+        ~for i in range(self.x){
+            <tr>
+                <th scope="row">~(i+1)~</th>
+                <td>Mark</td>
+                <td>Otto</td>
+                <td>@mdo</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
 ~if self.x > 5{
 <p>Counter is greater than 5</p>
 }
 ~else{
 <p>Counter is less than or equal to 5</p>
     ~if self.x == 5{
-        <p>Counter is at 5</p>
+<p>Counter is at 5</p>
     }
 <p>
     ~exe~rose_line += (lambda: "Counter is, currently, at 1" if self.x == 1 else "")()

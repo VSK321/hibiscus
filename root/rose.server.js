@@ -55,10 +55,31 @@ socket.onmessage = function (event) {
     const keys = Object.keys(message['insert']);
     for (x = 0; x < keys.length; x++) {
         try {
-            document.evaluate(keys[x], document).iterateNext().innerHTML = message['insert'][keys[x]];
+            if (message['insert'][keys[x]][1] === 0) {
+                document.evaluate(keys[x], document).iterateNext().remove();
+            }
+            else if (message['insert'][keys[x]][1] === 2) {
+                document.evaluate(keys[x], document).iterateNext().innerHTML = message['insert'][keys[x]][0];
+            }
+            else {
+                for (y = 0; y < message['insert'][keys[x]][0].length; y++) {
+                    var wrapper = document.createElement('div');
+                    wrapper.innerHTML = message['insert'][keys[x]][0][y];
+                    var elem = wrapper.firstChild;
+                    if (elem.innerHTML != message['insert'][keys[x]][0][y]) {
+                        var wrapper = document.createElement('tbody');
+                        wrapper.innerHTML = message['insert'][keys[x]][0][y];
+                        var elem = wrapper.firstChild;
+                    }
+                    document.evaluate(keys[x], document).iterateNext().appendChild(elem);
+                }
+                //var parser = new DOMParser();
+                //var doc = parser.parseFromString(message['insert'][keys[x]][0], 'text/html');
+                //var elem = doc.body.firstChild;
+            }
         }
-        catch {
-
+        catch (e) {
+            console.log(e);
         }
     }
     const keysPaths = Object.keys(message['paths']);

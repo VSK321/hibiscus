@@ -49,7 +49,7 @@ def Convert(path: str, fileName: str) -> None:
         file = open(fileName[:-5]+'.py', 'r')
         microcontrollerData = file.read()
         file.close()
-    except:
+    except FileNotFoundError:
         file = open(fileName[:-5]+'.py', 'w')
         microcontrollerData = 'import view\nclass Page(view.View):\n    def __init__(self):\n        pass\n'
         file.write(microcontrollerData)

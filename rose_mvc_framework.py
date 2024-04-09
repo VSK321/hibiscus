@@ -17,7 +17,7 @@ class MVC():
         #super().__init__(host, port, backlog, threads)
         self.Critical_View: dict[str, ModuleType] = {}
         
-    async def ViewHandlerAsync(self, path=None) -> tuple[str, bytes]:
+    async def ViewHandlerAsync(self) -> tuple[str, bytes]:
         '''
         !TODO: Update to include paths using a new list called mvc_views OR update controllers to return mvc_views (add compiler for it)
         '''
@@ -63,7 +63,7 @@ class MVC():
             else:
                 softpath_Type = app.funcs[found_pattern]['type']
             if softpath_Type == 'view':
-                (headers, response) = await self.ViewHandlerAsync(softpath)
+                (headers, response) = await self.ViewHandlerAsync()
                 await send({"type": "http.response.start", "status": 200, "headers": headers})
                 await send({"type": "http.response.body", "body": response})
             elif softpath_Type == 'controller':

@@ -135,11 +135,12 @@ class Controller:
         return page_view, paths
 
     async def WebSocketRequestHandlerAsync(self, data):
+        data = json.loads(data)
         if data['type'] == 'info':
             sentData = await self.InfoWebSocketAsync(data)
         elif data['type'] == 'update':
             sentData = await self.UpdateWebSocketAsync(data)
-        return sentData
+        await self.websocket.send_json(sentData)
 
     async def InfoWebSocketAsync(self, data):
         try:
@@ -229,9 +230,7 @@ class Controller:
         try:
             while self.websocket.client_state == WebSocketState.CONNECTED:
                 request = await self.websocket.receive_text()
-                request = json.loads(request)
-                sendData = await self.WebSocketRequestHandlerAsync(request)
-                await self.websocket.send_json(sendData)
+                await self.WebSocketRequestHandlerAsync(request)
         except WebSocketDisconnect:
             pass
         #await self.websocket.close()

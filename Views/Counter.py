@@ -12,6 +12,7 @@ class Page(view.View):
 
     async def AddOne(self):
         self.x += 1
+        time.sleep(5)
         return True
 
     async def SubOne(self):

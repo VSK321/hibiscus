@@ -115,12 +115,25 @@ class App:
         self.paths_to_re: list[tuple[function, str]] = []
         self.funcs: dict[str, dict[str, object]] = {}
 
-    def set_route(self, path: str, iscontroller: bool = False, metadata = None):
+    def set_route(self, path: str, metadata = None):
         def wrapper(func: ModuleType):
             converted_path, subs = convert_path(path.lower())
             compiled_re = re.compile(converted_path)
             self.paths_to_re.append((compiled_re, path.lower(), subs))
-            self.funcs[path.lower()] = {'type': (lambda: "controller" if iscontroller else "view")(), 'module' : func, 'metadata': metadata}            
+            self.funcs[path.lower()] = {'type': (lambda: "controller" if func.__name__ == "Controller" else "view")(), 'module' : func, 'metadata': metadata}            
+            @functools.wraps(func)
+            def inner_wrapper(*args, **kwargs):
+                return func(*args, **kwargs)
+            return inner_wrapper
+        return wrapper
+
+class AppModels:
+    def __init__(self):
+        self.registered_models: dict[str, dict[str, object]] = {}
+    
+    def register(self, metadata = None):
+        def wrapper(func: ModuleType):
+            self.registered_models[func.__name__] = {'metadata': metadata, 'module': func}
             @functools.wraps(func)
             def inner_wrapper(*args, **kwargs):
                 return func(*args, **kwargs)

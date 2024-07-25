@@ -17,3 +17,8 @@ def HTTP_Headers_Constructor(headers):
     actualHeader = actualHeader + '\r\n'
     return actualHeader
 
+def HTTP_Headers_Uvicorn_Constructor(headers) -> list[tuple[str, str]]:
+    setOfHeaders: list[tuple[str, str]] = []
+    for val in headers:
+        setOfHeaders.append([val.encode(), headers[val].encode()])
+    return setOfHeaders

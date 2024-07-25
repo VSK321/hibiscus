@@ -49,12 +49,43 @@ function Init() {
 }
 
 var message; var elements; var socket;
-socket = new WebSocket(("ws://" + window.location.hostname + "/_rose"));
+socket = new WebSocket(("ws://" + window.location.hostname + ":" + window.location.port + "/_rose"));
 socket.onmessage = function (event) {
     message = JSON.parse(event.data);
     const keys = Object.keys(message['insert']);
     for (x = 0; x < keys.length; x++) {
-        document.evaluate(keys[x], document).iterateNext().innerHTML = message['insert'][keys[x]];
+        try {
+            if (message['insert'][keys[x]][1] === 0) {
+                document.evaluate(keys[x], document).iterateNext().remove();
+            }
+            else if (message['insert'][keys[x]][1] === 2) {
+                document.evaluate(keys[x], document).iterateNext().innerHTML = message['insert'][keys[x]][0];
+            }
+            else {
+                for (y = 0; y < message['insert'][keys[x]][0].length; y++) {
+                    var wrapper = document.createElement('div');
+                    wrapper.innerHTML = message['insert'][keys[x]][0][y][0];
+                    var elem = wrapper.firstChild;
+                    if (elem.innerHTML != message['insert'][keys[x]][0][y][0]) {
+                        var wrapper = document.createElement('tbody');
+                        wrapper.innerHTML = message['insert'][keys[x]][0][y][0];
+                        var elem = wrapper.firstChild;
+                    }
+                    //Previous Element XPath
+                    if (!message['insert'][keys[x]][0][y][1]) {
+                        document.evaluate(keys[x], document).iterateNext().appendChild(elem);
+                    }
+                    //Next Element XPath
+                    else {
+                        var next_elem = document.evaluate(message['insert'][keys[x]][0][y][1], document).iterateNext();
+                        document.evaluate(keys[x], document).iterateNext().insertBefore(elem, next_elem);
+                    }
+                }
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
     }
     const keysPaths = Object.keys(message['paths']);
     for (x = 0; x < keysPaths.length; x++) {

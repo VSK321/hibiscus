@@ -1,33 +1,109 @@
-import websocket
+from collections import deque
+from enum import Enum
 import json
 import threading
 from lxml import etree
-from lxml.html import fromstring, tostring
+from lxml.html import HtmlElement, fromstring, tostring
 from lxml.html.diff import htmldiff, html_annotate
 import difflib
-import controller
 from AppLoc import *
-import asyncio
 import sys
 import traceback
 
-@app.set_route("/_rose", True)
-class Controller(controller.Controller):
+from starlette.websockets import WebSocket
+from starlette.websockets import WebSocketDisconnect
+from starlette.websockets import WebSocketState
 
-    def __init__(self, conn, addr, http_headers, http_data, Critical_View):
-        self.conn = conn
-        self.addr = addr
-        self.http_headers = http_headers
-        self.http_data = http_data
+class Change_Status(Enum):
+    Removed = 0
+    Added = 1
+    Updated = 2
+
+@app.set_route("/_rose")
+class Controller:
+
+    def __init__(self, send, receive, scope, Critical_View):
+        self.send = send
+        self.receive = receive
+        self.scope = scope
         self.Critical_View = Critical_View
         self.Lock = threading.Lock()
-        self.SoftPath = http_headers.Url
+        self.SoftPath = scope['path']
         self.paths = {}
         self.path_values: dict = {}
         self.page_view = ""
         self.app_view = ""
         self.original_doc = ""
         self.access_paths: list[tuple[str, str]] = []
+        self.websocket = None
+        
+    def remove_optional_end(self, value: str):
+        value = value.split('/')
+        for v in range(len(value)):
+            if value[v].endswith('[1]'):
+                value[v] = value[v][:-3]
+        return '/'.join(value)
+        
+    def find_changes(self, old_page: str, new_page: str) -> list[tuple[str, Change_Status]]:
+        old_tree = fromstring(old_page)
+        new_tree = fromstring(new_page)
+
+        def compare_elements(old_element: HtmlElement, new_element: HtmlElement, root: etree.ElementTree, old_root: etree.ElementTree) -> list[tuple[str, Change_Status]]:
+
+            changed_elements = []
+            
+            if tostring(old_element) == tostring(new_element):
+                return changed_elements
+
+            if old_element.tag != new_element.tag:
+                changed_elements.append((root.getpath(new_element), Change_Status.Updated))
+                
+            elif len(old_element.getchildren()) == 0 and len(new_element.getchildren()) == 0:
+                            old_text = old_element.text
+                            new_text = new_element.text
+                            if old_text != new_text:
+                                changed_elements.append((root.getpath(new_element), Change_Status.Updated))
+
+            else:
+                old_attrs = dict(old_element.attrib)
+                new_attrs = dict(new_element.attrib)
+                added_attrs = set(new_attrs) - set(old_attrs)
+                removed_attrs = set(old_attrs) - set(new_attrs)
+                changed_attrs = {(attr, old_attrs[attr], new_attrs[attr]) for attr in set(old_attrs) & set(new_attrs) if old_attrs[attr] != new_attrs[attr]}
+
+                if added_attrs or removed_attrs or changed_attrs:
+                    changed_elements.append((root.getpath(new_element), Change_Status.Updated))
+                else:
+                    ordered_old_element_xpaths = [self.remove_optional_end(old_root.getpath(x)) for x in old_element.getchildren()]
+                    old_element_xpaths = set(ordered_old_element_xpaths)
+                    ordered_new_element_xpaths = [self.remove_optional_end(root.getpath(x)) for x in new_element.getchildren()]
+                    new_element_xpaths = set(ordered_new_element_xpaths)
+                    added_elements = new_element_xpaths - old_element_xpaths
+                    deleted_elements = old_element_xpaths - new_element_xpaths
+                    
+                    all_xpaths = old_element_xpaths.union(new_element_xpaths)
+                    
+                    possible_updated_elements = all_xpaths - added_elements - deleted_elements
+                    
+                    changed_elements += [(x, Change_Status.Removed) for x in deleted_elements]
+                    
+                    added_dict = dict.fromkeys(ordered_new_element_xpaths)
+                    for value in added_elements:
+                        added_dict[value] = 1
+                        
+                    for key in added_dict:
+                        if added_dict[key] == 1:
+                            changed_elements.append((key, Change_Status.Added))
+
+                    for xpath in possible_updated_elements:
+                        old_elem = old_root.xpath(xpath)[0]
+                        new_elem = root.xpath(xpath)[0]
+                        sub_changes = compare_elements(old_elem, new_elem, root, old_root)
+                        changed_elements += sub_changes
+
+            return changed_elements
+
+        return compare_elements(old_tree, new_tree, etree.ElementTree(new_tree), etree.ElementTree(old_tree))
 
     def HTML_Manager(self, page_view, app_view):
         paths = {}
@@ -58,11 +134,12 @@ class Controller(controller.Controller):
         return page_view, paths
 
     async def WebSocketRequestHandlerAsync(self, data):
+        data = json.loads(data)
         if data['type'] == 'info':
             sentData = await self.InfoWebSocketAsync(data)
         elif data['type'] == 'update':
             sentData = await self.UpdateWebSocketAsync(data)
-        return sentData
+        await self.websocket.send_json(sentData)
 
     async def InfoWebSocketAsync(self, data):
         try:
@@ -80,12 +157,13 @@ class Controller(controller.Controller):
             #self.page_view = app.funcs[data['softpath'].lower()]['module']()
         except:
             self.page_view = app.funcs['/_error']['module']()
-        temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
-        self.original_doc = temp
-        data['insert'] = {"/HTML/BODY/APP": temp}
+        page, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
+        self.original_doc = page
+        data['insert'] = {"/HTML/BODY/APP": [page, Change_Status.Updated.value]}
         return data
 
     async def UpdateWebSocketAsync(self, data):
+        data['insert'] = {}
         method = self.paths[data['path'] + '/' + data['event']]
         if data['path'].find('/MAIN') != -1:
             update = self.page_view
@@ -122,74 +200,45 @@ class Controller(controller.Controller):
                     continue
                 update = getattr(update, methods[method])
         if update:
-            temp, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
-            page_view = fromstring(temp)
-            tree = etree.ElementTree(page_view)
-            #for i,s in enumerate(difflib.ndiff(self.original_doc, temp)):
-            #    if s[0] == " ": continue
-            #    elif s[0] == "-":
-            #        print(u'Delete "{}" from position {}'.format(s[-1], i))
-            #    elif s[0] == "+":
-            #        print(u'Add "{}" from position {}'.format(s[-1], i))
-            diff = htmldiff(self.original_doc, temp)
-            #print(diff)
-            diff_view = fromstring(diff)
-            self.original_doc = temp
-            data['insert'] = {"/HTML/BODY/APP": temp}
+            page, data['paths'] = self.HTML_Manager(await self.page_view.main(), await self.app_view.main())
+            curr_page = fromstring(page)
+            curr_tree = etree.ElementTree(curr_page)
+            changes = self.find_changes(self.original_doc, page)
+            changes = sorted(changes, key=lambda x: x[1].value)
+            for change, change_type in changes:
+                root_removed = '/'.join(change.split('/')[2:])
+                if change_type == Change_Status.Removed:
+                    data['insert']["/HTML/BODY/APP"+change] = ['', Change_Status.Removed.value]
+                elif change_type == Change_Status.Added:
+                    p: HtmlElement = curr_page.xpath(root_removed)[0]
+                    next_elem = p.getnext()
+                    if next_elem != None:
+                        next_elem = "/HTML/BODY/APP" + curr_tree.getpath(next_elem)
+                    if '/HTML/BODY/APP'+'/'.join(change.split('/')[:-1]) in data['insert']:
+                        data['insert']['/HTML/BODY/APP'+'/'.join(change.split('/')[:-1])][0].append((tostring(p).decode(), next_elem))
+                    else:
+                        data['insert']['/HTML/BODY/APP'+'/'.join(change.split('/')[:-1])] = [[(tostring(p).decode(), next_elem)], change_type.value]
+                else:
+                    data['insert']["/HTML/BODY/APP"+change] = [tostring(curr_page.xpath(root_removed)[0]).decode(), change_type.value]
+            self.original_doc = page
+        #data['insert'] = {"/HTML/BODY/APP": page}
         data['vars'] = {}
         return data
 
-    async def WebSocketPing(self):
-        loop = asyncio.get_event_loop()
-        data = "Current"
-        data = websocket.WebSocketDataEncoder(data, 1, 9)
-        await loop.sock_sendall(self.conn, data.encode('utf8'))
-        
-    async def Sender(self, data, loop):
-        data = json.loads(data)
-        #print(data)
-        sendData = await self.WebSocketRequestHandlerAsync(data)
-        #print(sendData)
-        if sendData['insert'] == {}:
-            pass
-        else:
-            sendData = json.dumps(sendData).encode()
-            sendData = websocket.WebSocketDataEncoder(sendData, 1, 1)
-            await loop.sock_sendall(self.conn, sendData)
-
     async def WebSocketHandlerAsync(self):
-        loop = asyncio.get_event_loop()
         try:
-            data = (await loop.sock_recv(self.conn, 4096))
-            data, fin, opcode = websocket.WebSocketDataDecoder(data)
-            while opcode != "1000":
-                temp = data
-                while fin != "1":
-                    data = (await loop.sock_recv(self.conn, 4096))
-                    data, fin, opcode = websocket.WebSocketDataDecoder(data)
-                    temp = temp + data
-                data = temp
-                if opcode == "1001":
-                    data = websocket.WebSocketDataEncoder(data, 1, 10)
-                    await loop.sock_sendall(self.conn, data)
-                else:
-                    await self.Sender(data, loop)
-                data = (await loop.sock_recv(self.conn, 4096))
-                data, fin, opcode = websocket.WebSocketDataDecoder(data)
-            self.conn.close()
-            EMCPG.update_probabilities(self.access_paths)
-        except Exception as e:
-            print(traceback.format_exc())
+            while self.websocket.client_state == WebSocketState.CONNECTED:
+                request = await self.websocket.receive_text()
+                await self.WebSocketRequestHandlerAsync(request)
+        except WebSocketDisconnect:
+            pass
+        #await self.websocket.close()
+        EMCPG.update_probabilities(self.access_paths)
 
 
     async def main(self):
-        connectiontype, seckey = websocket.VerifyWebSocketRequest(self.http_headers)
-        if connectiontype:
-            self.app_view = self.Critical_View['App'].Page()
-            websocket.AcceptWebSocketRequest(self.conn, seckey)
-            #self.t = threading.Thread(target = self.WebSocketHandler, daemon = True)
-            #self.t.start()
-            #self.t.join()
-            await self.WebSocketHandlerAsync()
-        else:
-            self.conn.close()
+        self.websocket = WebSocket(scope=self.scope, receive=self.receive, send=self.send)
+        self.app_view = self.Critical_View['App'].Page()
+        await self.websocket.accept()
+        await self.WebSocketHandlerAsync()
+        

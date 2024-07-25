@@ -1,7 +1,7 @@
 import view
 from AppLoc import *
 import Views.BedroomLight
-import time
+import asyncio
 
 @app.set_route("/counter/{x:int,}")
 class Page(view.View):
@@ -12,7 +12,7 @@ class Page(view.View):
 
     async def AddOne(self):
         self.x += 1
-        time.sleep(5)
+        await asyncio.sleep(5)
         return True
 
     async def SubOne(self):

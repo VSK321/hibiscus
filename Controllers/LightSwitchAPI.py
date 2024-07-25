@@ -3,7 +3,7 @@ from AppLoc import *
 import json
 import socket
 
-@app.set_route("/lightapi", True)
+@app.set_route("/lightapi")
 class Controller(controller.Controller):
 
     def __init__(self, *args, **kwargs):
@@ -24,5 +24,5 @@ class Controller(controller.Controller):
             sock.send(b'off')
             sock.close()
         val = { "status" : True }
-        self.return_data(json.dumps(val))
+        await self.return_data(json.dumps(val))
 

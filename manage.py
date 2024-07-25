@@ -1,12 +1,13 @@
 import argparse
-import subprocess
 import uvicorn
 from server import app, build
 from peewee import *
-import json
-import os
 import importlib
 import glob
+
+"""
+Capture all command arguments and compare to functions from .commands and rose.commands
+"""
 
 parser = argparse.ArgumentParser(description='Rose framework management')
 parser.add_argument("command", nargs="+")  # Capture optional argument after "command"
@@ -20,6 +21,11 @@ except Exception as e:
     print(f"Error parsing arguments: {e}")
 
 argsdict = vars(args)
+
+commands = glob.glob('./commands/*.py')
+
+#importlib.import_module()
+
 #parser.add_argument('migrate', type=str, help="")
 #args = parser.parse_args(['MIGRATE'])
 #argsdict += vars(args)
@@ -30,7 +36,9 @@ argsdict = vars(args)
 #     db = SqliteDatabase(settings['database'])
 #     db.connect()
     
-    #db.create_tables([Models.User, Post])
+#     db.create_tables([Models.User, Post])
+
+#for com in getattr(locals().get("commands") or globals().get("commands"))
 
 if 'runserver' in argsdict['command']:
     if len(argsdict['command']) == 2:

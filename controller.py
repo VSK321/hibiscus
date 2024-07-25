@@ -26,6 +26,6 @@ class Controller:
         #chdir(path)
         with open(path, 'r') as file:
             data = file.read()
-        env = Environment(loader=FileSystemLoader(cwd+"/templates/"), enable_async=True)
+        env = Environment(loader=FileSystemLoader("templates/"), enable_async=True)
         tmpl = env.from_string(data)
         await self.return_data(await tmpl.render_async(**params))

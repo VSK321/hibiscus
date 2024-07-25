@@ -11,6 +11,3 @@ class Page(view.View):
         self.val = val
         return True
 
-    async def ReturnTrue(self):
-        return True
-

@@ -6,7 +6,6 @@ from lxml import etree
 from lxml.html import HtmlElement, fromstring, tostring
 from lxml.html.diff import htmldiff, html_annotate
 import difflib
-import controller
 from AppLoc import *
 import sys
 import traceback
@@ -60,8 +59,8 @@ class Controller:
                 changed_elements.append((root.getpath(new_element), Change_Status.Updated))
                 
             elif len(old_element.getchildren()) == 0 and len(new_element.getchildren()) == 0:
-                            old_text = old_element.text_content().strip()
-                            new_text = new_element.text_content().strip()
+                            old_text = old_element.text
+                            new_text = new_element.text
                             if old_text != new_text:
                                 changed_elements.append((root.getpath(new_element), Change_Status.Updated))
 

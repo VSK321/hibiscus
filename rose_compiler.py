@@ -1,13 +1,15 @@
 import os
 import uuid
 
+from lxml.html import fromstring, tostring
+
 def ConvertSingleLine(line: str) -> str:
     if line.replace('\t', '').replace(' ', '').startswith("~exe~"):
         line = line[(line.find("~exe~")+5):len(line)]        
     else:
         line = line.replace("~(", "' + str(")
         line = line.replace(")~", ") + '")
-        line = "rose_line = rose_line + '" + line + "\\n' "
+        line = "rose_line += '" + line + "\\n' "
     return line
 
 def ConvertFile(temp: str) -> str:
@@ -36,6 +38,10 @@ def ConvertFile(temp: str) -> str:
     for x in splitTemp:
         temp = temp + '\n' + x
     return temp
+
+def ConvertPage(page: str):
+    page = fromstring(page)
+    
 
 def Convert(path: str, fileName: str) -> None:
     microcontrollerData = ""

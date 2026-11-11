@@ -1,0 +1,3 @@
+<p>Length of "~(self.val)~" is ~(len(self.val))~</p>
+<input hbsinput="InputVal" />
+

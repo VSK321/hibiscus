@@ -1,0 +1,6 @@
+<p>Counter is at ~(self.x)~ </p>
+<button class="btn btn-primary" hbsclick="AddOne">Add</button>
+<button class="btn btn-primary" hbsclick="SubOne">Subtract</button>
+<button class="btn btn-primary" hbsclick="add_self" hbsid="~(self.x)~">Add Counter Value</button>
+
+

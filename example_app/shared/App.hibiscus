@@ -1,0 +1,15 @@
+
+<div class="page">
+    <div class="sidebar">
+        ~(await self.menu.main("menu"))~
+    </div>
+
+    <div class="main">
+        <div class="content px-4">
+            <main>
+                ~appView~
+            </main>
+        </div>
+    </div>
+</div>
+
